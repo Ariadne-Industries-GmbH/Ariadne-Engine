@@ -529,3 +529,38 @@ services:
 Interested in how the Ariadne Engine fits into the bigger picture?
 - Check out the **[Ariadne Anyverse vision](https://www.ariadneanyverse.de/)** (digital ecosystem for data sovereignty).
 - Follow our **[B2B & B2C activities](https://www.linkedin.com/company/ariadneanyverse/)** for updates.
+
+## License
+
+**Custom license/usage permission** 
+- users may pull and run the Docker image and use the engine for private use, including commercial use, but cannot redistribute. 
+- all rights belong to Ariadne Industries GmbH and Fabian Fuchs
+- See https://www.ariadneanyverse.de/Annex_On-premise_License_Terms.pdf
+
+By downloading and using our Software, you agree with the License Terms given.
+
+### License TLDR
+
+**1 Scope & Definitions**
+1. These license terms apply to every installation of the software within the customer’s IT
+environment (“on-premise”). A user account with the provider is not required for this.
+2. The customer is the company designated in the offer/agreement to whom the software is licensed.
+3. An instance refers to a functional copy of the software on a server or container system of the customer.
+   
+**2 Grant of License**
+1. The provider grants the customer a simple, non-transferable, non-sublicensable right to
+use the software for the customer’s internal business purposes.
+2. Unless otherwise specified in the offer, the license is perpetual and is not limited by
+quantity or performance.
+3. Source code or object code is not transferred.
+
+**3 Usage Restrictions**
+The customer shall in particular not:
+- make the software available to or lease it to third parties;
+- reverse engineer, decompile, or disassemble the software (cf. § 69e German Copyright
+Act [UrhG]), unless legally required and the provider refuses the necessary cooperation;
+- remove or alter protection notices, logos, or copyright statements;
+- publish the results of benchmarks without prior written consent.
+
+The last point excludes issues and bugs, which can be reported publically in this Github Repository, so we
+can fix them as soon as possible.

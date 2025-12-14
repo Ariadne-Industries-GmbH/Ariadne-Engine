@@ -1,3 +1,6 @@
+# LICENSED under custome Ariadne Industries GmbH License Terms
+# see https://www.ariadneanyverse.de/Annex_On-premise_License_Terms.pdf
+
 import asyncio
 import hashlib
 import json
