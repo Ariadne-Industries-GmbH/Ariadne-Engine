@@ -40,7 +40,6 @@ services:
   ariadne-webapp:
     image: ariadneindustries/ariadne-webapp:0.1.0-rc.2-web-bff
     restart: unless-stopped
-    container_name: ariadnewebapp_010
     ports:
       - "43380:80"
       - "44380:443"

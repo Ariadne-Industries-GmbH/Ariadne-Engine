@@ -4,9 +4,9 @@
   <img src="./images/ariadne_anyverse_agents.gif" alt="Ariadne Engine Agents"/>
 </div>
 
-**Automate complex AI workflows on your data—without losing control.**
+**Automate complex AI workflows on your data — without losing control.**
 
-The **Ariadne Engine** is a **meta-system for data intelligence**, designed to **autonomously process and connect your data** using AI agents, knowledge graphs, and modular workflows. Unlike traditional LLM interfaces, it abstracts away the complexity of managing models and interactions—so you can focus on **extracting actionable insights from your data**.
+The **Ariadne Engine** is a **meta-system for data intelligence**, designed to **autonomously process and connect your data** using AI agents, knowledge graphs, and modular workflows. Unlike traditional LLM interfaces, it abstracts away the complexity of managing models and interactions — so you can focus on **extracting actionable insights from your data**.
 
 Built by **Ariadne Industries GmbH**, it is the technical backbone of **[Ariadne Anyverse](https://www.ariadneanyverse.de)**, a digital ecosystem where **data sovereignty meets AI automation**.
 
@@ -54,13 +54,13 @@ The Ariadne Engine is tailored for:
 
 Most LLM tools require you to manage models, agents, and workflows manually. The Ariadne Engine **handles the complexity for you**:
 
-✅ **Agentic automation**: Internal agents interact with LLMs, VLMs, and embeddings—**you define the workflows, not the infrastructure**.
+✅ **Agentic automation**: Internal agents interact with LLMs, VLMs, and embeddings — **you define the workflows, not the infrastructure**.
 
 ✅ **Knowledge graphs**: Your data becomes a **connected intelligence layer**, enabling long-term reasoning across documents, APIs, and internal systems.
 
 ✅ **Full control**: Deploy on-premises for maximum privacy or use our cloud version (hosted in Germany, GDPR-compliant).
 
-> **Not just another LLM frontend**: The engine is designed to **orchestrate multi-modal AI workflows**—think of it as a **private AI operating system** for your data.
+> **Not just another LLM frontend**: The engine is designed to **orchestrate multi-modal AI workflows** — think of it as a **private AI operating system** for your data.
 
 ---
 
@@ -71,7 +71,7 @@ Most LLM tools require you to manage models, agents, and workflows manually. The
 | **Agentic Workflows** | Autonomous agents handle tasks like document processing, API integrations, or knowledge updates. Define workflows in Python and let the engine execute them. |
 | **Knowledge Graphs**  | Your data is structured as a **dynamic intelligence layer**, enabling cross-references and long-term context. *(No raw storage -> connected insights.)* |
 | **Modular AI Integration** | Supports LLMs, VLMs, and embeddings via APIs (e.g., Ollama, Lama.cpp, or cloud providers). Configure once, use flexibly. |
-| **Privacy by Design**  | Local-only processing or cloud privacy tiers—your choice. Hosted in Germany for compliance. |
+| **Privacy by Design**  | Local-only processing or cloud privacy tiers — your choice. Hosted in Germany for compliance. |
 
 ---
 
@@ -121,14 +121,14 @@ Tells the engine which models to use and how to connect to them.
 ```json
 {
     "ministral-14b": { // This key corresponds to the display name of this model in the UI.
-      "url": "http://localhost:44410",
+      "url": "http://host.docker.internal:44410", // make sure the llm server is reachable from within the engine docker container
       "service_type": "llama.cpp", // Supported types: 'ollama' or 'llama.cpp'.
-      "temperature": 0.7
+      "temperature": 0.15
     },
   "ministral-3b": {
-    "url": "http://localhost:44408",
+    "url": "http://host.docker.internal:44408", // make sure the llm server is reachable from within the engine docker container
     "service_type": "llama.cpp",
-    "temperature": 0.7 // Optional parameter with default values (e.g., 0.7). Can be omitted if no customization is needed. More params added in future versions
+    "temperature": 0.15 // Optional parameter with default values (e.g., 0.7). Can be omitted if no customization is needed. More params added in future versions
   }
 }
 
@@ -335,7 +335,7 @@ The Ariadne Engine uses **two types of storage** for your data, depending on you
   - Embedded databases (e.g., SQLite) for lightweight storage.
   - Uploaded Files
 - **How it works**:
-  The engine **manages these folders automatically**. No manual setup is required—each user gets their own isolated storage.
+  The engine **manages these folders automatically**. No manual setup is required — each user gets their own isolated storage.
 
 #### 2. **FalkorDB (Required for Knowledge Graphs)**
 
@@ -454,7 +454,6 @@ services:
   ariadne-webapp:
     image: ariadneindustries/ariadne-webapp:0.1.0-rc.2-web-bff
     restart: unless-stopped
-    container_name: ariadnewebapp_010
     ports:
       - "43380:80"   # HTTP port for accessing the webapp
       - "44380:443"  # HTTPS port (optional, not properly supported, please use a Proxy server if you need TLS)
