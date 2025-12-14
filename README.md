@@ -1,6 +1,8 @@
 # 🚀 Ariadne Engine On-Premises: Your Private AI Data Intelligence
 
-![Ariadne Anyverse](./images/ariadne_anyverse_agents.gif)
+<div align="center">
+  <img src="./images/ariadne_anyverse_agents.gif" alt="Ariadne Engine Agents"/>
+</div>
 
 **Automate complex AI workflows on your data—without losing control.**
 
@@ -14,13 +16,19 @@ Built by **Ariadne Industries GmbH**, it is the technical backbone of **[Ariadne
 
 ### What’s New?
 
-The Ariadne Engine **v0.1.0** is now **stable and production-ready**. You can:
+🔥 The Ariadne Engine **v0.1.0** is now **stable and production-ready**. 
+
+You can:
+
 ✅ **Build knowledge graphs**: Index documents and connect data into a dynamic intelligence layer.
+
 ✅ **Use pre-built agents**: Interact with internal agents via chat or custom workflows.
+
 ✅ **Integrate external systems**: Connect to any MCP-compatible service (e.g., APIs, databases) using [Model-Context Protocol](https://modelcontextprotocol.io/docs/getting-started/intro) servers.
+
 ✅ **Customize workflows**: Define your own logic with Python scripts in the `flow-scripts/` directory.
 
-### 🔮 Roadmap: What’s Next?
+### Roadmap: What’s Next?
 
 We’re already working on **v0.2.0**, which will bring:
 - **Advanced Scheduler**: Automate tasks and workflows with time-based triggers.
@@ -47,7 +55,9 @@ The Ariadne Engine is tailored for:
 Most LLM tools require you to manage models, agents, and workflows manually. The Ariadne Engine **handles the complexity for you**:
 
 ✅ **Agentic automation**: Internal agents interact with LLMs, VLMs, and embeddings—**you define the workflows, not the infrastructure**.
+
 ✅ **Knowledge graphs**: Your data becomes a **connected intelligence layer**, enabling long-term reasoning across documents, APIs, and internal systems.
+
 ✅ **Full control**: Deploy on-premises for maximum privacy or use our cloud version (hosted in Germany, GDPR-compliant).
 
 > **Not just another LLM frontend**: The engine is designed to **orchestrate multi-modal AI workflows**—think of it as a **private AI operating system** for your data.
@@ -59,7 +69,7 @@ Most LLM tools require you to manage models, agents, and workflows manually. The
 | Feature               | Description                                                                 |
 |-----------------------|-----------------------------------------------------------------------------|
 | **Agentic Workflows** | Autonomous agents handle tasks like document processing, API integrations, or knowledge updates. Define workflows in Python and let the engine execute them. |
-| **Knowledge Graphs**  | Your data is structured as a **dynamic intelligence layer**, enabling cross-references and long-term context. *(No raw storage—just connected insights.)* |
+| **Knowledge Graphs**  | Your data is structured as a **dynamic intelligence layer**, enabling cross-references and long-term context. *(No raw storage -> connected insights.)* |
 | **Modular AI Integration** | Supports LLMs, VLMs, and embeddings via APIs (e.g., Ollama, Lama.cpp, or cloud providers). Configure once, use flexibly. |
 | **Privacy by Design**  | Local-only processing or cloud privacy tiers—your choice. Hosted in Germany for compliance. |
 
