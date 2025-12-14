@@ -1,0 +1,160 @@
+services:
+  # Ministral-3: Excelent Small Model in three different sizes. Multimodla. Good for European Users.
+  ministral-14b-instruct-server:
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    restart: "no"
+    container_name: ministral-14b-instruct
+    volumes:
+      - ./models/others/Ministral-3-14B-Instruct-2512-UD-Q6_K_XL.gguf:/models/ministral-14b-instruct.gguf:ro
+      - ./models/others/mmproj-F16-Ministral-3-14B-Instruct-2512.gguf:/models/mmproj-ministral-14b-instruct.gguf:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      - "44410:44410"
+    command: >
+      -m /models/ministral-14b-instruct.gguf
+      --mmproj /models/mmproj-ministral-14b-instruct.gguf
+      --jinja
+      -c 175000
+      --parallel 2
+      --host 0.0.0.0
+      --port 44410
+      --cache-type-k q4_0
+      --cache-type-v q4_0
+      --flash-attn on
+      --top-k 20
+      --presence-penalty 1.5
+    networks:
+      - ariadne-network
+
+  # Qwen3-VL: State of the art open source multimodal LLMs from China.
+  qwen3-vl-8b-instruct-server:
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    restart: "no"
+    container_name: qwen3-vl-8b-instruct
+    volumes:
+      - ./models/others/Qwen3-VL-8B-Instruct-UD-Q4_K_XL.gguf:/models/qwen3-vl-8b-instruct.gguf:ro
+      - ./models/others/mmproj-F16-Qwen3-VL-8B-Instruct.gguf:/models/mmproj-qwen3-vl-8b-instruct.gguf:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      - "44410:44410"
+    command: >
+      -m /models/qwen3-vl-8b-instruct.gguf
+      --mmproj /models/mmproj-qwen3-vl-8b-instruct.gguf
+      --jinja
+      -c 30000
+      --host 0.0.0.0
+      --port 44410
+      --cache-type-k q4_0
+      --cache-type-v q4_0
+      --flash-attn on
+      --top-p 0.8
+      --top-k 20
+      --presence-penalty 1.5
+    networks:
+      - ariadne-network
+
+  # Devstral-Small: State of the art open source Model for Coding.
+  devstral-small-2-server:
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    restart: "no"
+    container_name: devstral-small-2
+    volumes:
+      - ./models/others/Devstral-Small-2-24B-Instruct-2512-UD-Q4_K_XL.gguf:/models/devstral-small-2-instruct.gguf:ro
+      # - ./models/others/mmproj-F16-Devstral-Small-2-24B-Instruct-2512.gguf:/models/mmproj-devstral-small-2-instruct.gguf:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      - "44410:44410"
+    command: >
+      -m /models/devstral-small-2-instruct.gguf
+      --jinja
+      -c 90000
+      --temp 0.15
+      --min-p 0.01
+      --host 0.0.0.0
+      --port 44410
+      --cache-type-k q4_0
+      --cache-type-v q4_0
+      --top-p 0.95
+      --top-k 20
+    networks:
+      - ariadne-network
+
+  llama-vlm-server:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    restart: "no"
+    volumes:
+      - ./models/others/mmproj-SmolVLM2-500M-Video-Instruct-Q8_0.gguf:/models/mmproj-SmolVLM2-500M-Video-Instruct-Q8_0.gguf:ro
+      - ./models/others/SmolVLM2-500M-Video-Instruct-Q8_0.gguf:/models/SmolVLM2-500M-Video-Instruct-Q8_0.gguf:ro
+    ports:
+      - "44409:44409"
+    command: >
+      -m /models/SmolVLM2-500M-Video-Instruct-Q8_0.gguf 
+      --mmproj /models/mmproj-SmolVLM2-500M-Video-Instruct-Q8_0.gguf 
+      -c 2048 
+      -t 8 
+      -ngl 0 
+      --no-mmproj-offload 
+      --host 0.0.0.0 
+      --port 44409
+    networks:
+      - ariadne-network
+
+  llama-cpp-server-cpu:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    restart: "no"
+    volumes:
+      - ./models/others/Qwen3-0.6B-Q4_K_M.gguf:/models/Qwen3-0.6B-Q4_K_M.gguf:ro
+    ports:
+      - "44408:44408"
+    command: >
+      -m /models/Qwen3-0.6B-Q4_K_M.gguf
+      --jinja  
+      -t 8 
+      -ngl 0
+      --parallel 2
+      -c 32000 
+      --host 0.0.0.0 
+      --port 44408
+    networks:
+      - ariadne-network
+
+  llama-cpp-embedding-server:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    restart: "no"
+    volumes:
+      - ./models/others/bge-m3-q4_k_m.gguf:/models/bge-m3-q4_k_m.gguf:ro
+    ports:
+      - "44441:44441"
+    command: >
+      -m /models/bge-m3-q4_k_m.gguf
+      --embeddings
+      --host 0.0.0.0
+      --port 44441
+      --parallel 2
+      --batch-size 4096
+      --ubatch-size 4096
+      -c 8192
+    networks:
+      - ariadne-network
+
+networks:
+  ariadne-network:
+    driver: bridge
