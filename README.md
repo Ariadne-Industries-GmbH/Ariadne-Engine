@@ -243,28 +243,30 @@ Ensure the following models are available in their respective directories:
 
 1. **LLM Models**:
 
-  You can use additional LLM models by downloading them from Hugging Face and hosting them via `llama.cpp` or `ollama`. 
-  Add configurations for these models in the `model_config.json` file under their desired display names.
+    You can use additional LLM models by downloading them from Hugging Face and hosting them via `llama.cpp` or `ollama`. 
+    Add configurations for these models in the `model_config.json` file under their desired display names.
 
-  Models, that we currently recommend:
+    Models, that we currently recommend:
     - https://huggingface.co/unsloth/Ministral-3-14B-Instruct-2512-GGUF
     - https://huggingface.co/unsloth/Ministral-3-8B-Instruct-2512-GGUF
     - https://huggingface.co/unsloth/Ministral-3-3B-Instruct-2512-GGUF
-    - Place the downloaded file in `./models/others/` if you follow the docker compose example of this repository.
+  
+    Place the downloaded file in `./models/others/` if you follow the docker compose example of this repository.
 
 2. **VLM Model**:
  
-  You can use additional VLM models by downloading them from Hugging Face and hosting via `llama.cpp`.
-  You can also point AAA_LLAMA_VLM_BASE_URL to any other OpenAI-compliant VLM API, but others then llama.cpp with SmolVLM2 is currently not tested.
-  The flexibility to configure other VLMs (e.g., OpenAI-compliant APIs) is planned for future releases.
-  Currently recommended model: SmolVLM2-500M-Video-Instruct (fast on CPU, suitable for document processing).
+    You can use additional VLM models by downloading them from Hugging Face and hosting via `llama.cpp`.
+    You can also point AAA_LLAMA_VLM_BASE_URL to any other OpenAI-compliant VLM API, but others then llama.cpp with SmolVLM2 is currently not tested.
+    The flexibility to configure other VLMs (e.g., OpenAI-compliant APIs) is planned for future releases.
+    Currently recommended model: SmolVLM2-500M-Video-Instruct (fast on CPU, suitable for document processing).
      - https://huggingface.co/ggml-org/SmolVLM2-500M-Video-Instruct-GGUF
-     - Place the downloaded file in `./models/others/` if you follow the docker compose example of this repository.
+
+    Place the downloaded file in `./models/others/` if you follow the docker compose example of this repository.
 
 3. **Embeddings Model**:
   
-   You can use additional embedding models by downloading them from Hugging Face and hosting via `llama.cpp`. The `AAA_EMBEDDINGS_BASE_URL` in the Docker Compose file allows you to point to any `llama.cpp`-compatible server or OpenAI-compliant embedding APIs. (currently only llama.cpp is tested)
-   Currently recommended model: BGE-M3, which is fast on CPU and suitable for text processing pipelines.
+    You can use additional embedding models by downloading them from Hugging Face and hosting via `llama.cpp`. The `AAA_EMBEDDINGS_BASE_URL` in the Docker Compose file allows you to point to any `llama.cpp`-compatible server or OpenAI-compliant embedding APIs. (currently only llama.cpp is tested)
+    Currently recommended model: BGE-M3, which is fast on CPU and suitable for text processing pipelines.
       - https://huggingface.co/bbvch-ai/bge-m3-GGUF
       - Place the downloaded file in `./models/others/` if you follow the repository's Docker Compose example.
 
