@@ -1,0 +1,174 @@
+
+networks:
+  ariadne-network:
+    driver: bridge
+
+services:
+  ariadne-engine:
+    image: ariadneindustries/ariadne-engine:0.1.0-on-prem
+    restart: unless-stopped
+    user: "${HOST_UID}:${HOST_GID}"
+    ports:
+      - "44444:44444"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./databases:/app/aaa-bundle/databases
+      - ./models/docling:/app/aaa-bundle/models/docling:ro
+      - ./models/faster-whisper:/app/aaa-bundle/models/faster-whisper
+      - ./flow-scripts:/app/aaa-bundle/flow-scripts:ro
+      - ./mcp_servers.json:/app/aaa-bundle/mcp_servers.json:ro
+      - ./model_config.json:/app/aaa-bundle/model_config.json:ro
+    environment:
+      - AAA_IDP_HOST=http://host.docker.internal:8000 # Defaults to "https://idp.ariadneanyverse.de" **but ignored if AAA_IDENTITY_SOURCE=integrated-idp**
+      - AAA_LLAMA_VLM_BASE_URL=http://llama-vlm-server:44409/v1 # Required for VLM functionality. **Error if not set.**
+      - AAA_EMBEDDINGS_BASE_URL=http://llama-cpp-embedding-server:44441/v1 # Required for embeddings functionality. **Error if not set.**
+      - AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED=true # Defaults to true. Enables Exclusive LLMs based on model_config.json (default for local-only configurations). 
+      - AAA_IS_PRIVACY_LEVEL_PREMIUM_ENABLED=false # Defaults to true. When enabled, use Premium-level privacy LLMs provided by Ariadne Industries.
+      - AAA_IS_PRIVACY_LEVEL_STANDARD_ENABLED=false # Defaults to true. When enabled, use Standard-level privacy LLMs provided by Ariadne Industries.
+      - AAA_ACTIVATE_WEB_SEARCH_SUBAGENT=false # Defaults to false. When disabled, web search subagent is inactive. Currently not supported locally.
+      - AAA_FASTER_WHISPER_MODEL=small # default is large-v3-turbo. Small is good for most cases and fast on cpu
+      - AAA_FALKORDB_HOST=falkordb # Defaults to "host.docker.internal". Must match the container name in `docker-compose.yml` if using a separate FalkorDB instance.
+      - AAA_FALKORDB_PORT=6379 # Overrides default port of 44400. Only required if connecting to an external FalkorDB instance on non-default ports.
+      - AAA_FALKORDB_PASSWORD=${AAA_FALKORDB_PASSWORD:-default} # Defaults to "default" if not set
+      # - AAA_LOCAL_AAA_PORT=44444 # defaults to 44444
+      - AAA_IDENTITY_SOURCE=integrated-idp # default is ariadne-anyverse, for local setup it should be integrated-idp.
+      - AAA_WORKER_PROCESSES=2 # Overrides default of 4 workers. Each worker uses around **4GB of RAM**.
+    networks:
+      - ariadne-network
+
+  ariadne-webapp:
+    image: ariadneindustries/ariadne-webapp:0.1.0-web-bff
+    restart: unless-stopped
+    ports:
+      - "43380:80"
+      - "44380:443"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - AAA_ENDPOINT_URL=http://host.docker.internal:44444/endpoint # can be set to the Ariadne Engine container, server ip address, or host. An Ariadne Engine must run there.
+      - IDP_BASE_URL=http://host.docker.internal:44444/integrated_idp # should be the Identity Provider used by the Ariadne Engine instance. Can be the integrated idp of the Ariadne Engine if enabled
+    networks:
+      - ariadne-network
+  
+  llama-cpp-server: # for the CUDA llama.cpp server, you have to configure your Docker engine to use CUDA
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    restart: unless-stopped
+    volumes:
+      - ./models/others/${GPU_LLM}.gguf:/models/${GPU_LLM}.gguf:ro
+      - ./models/others/${GPU_LLM_MMPROJ}.gguf:/models/${GPU_LLM_MMPROJ}.gguf:ro # optional for multimodal visual llms
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # Custom-Startbefehl (Passe den Modellpfad/Parameter an)
+    # --mmproj /models/${GPU_LLM_MMPROJ}.gguf is optional for multimodal visual llms
+    ports:
+      - "44410:44410"
+    command: >
+      -m /models/${GPU_LLM}.gguf
+      --mmproj /models/${GPU_LLM_MMPROJ}.gguf
+      --jinja
+      -c 175000
+      --parallel 2
+      --host 0.0.0.0
+      --port 44410
+      --cache-type-k q4_0 
+      --cache-type-v q4_0 
+      --flash-attn on
+      --top-p 0.95
+      --top-k 20
+      --presence-penalty 1.5
+      --min-p 0.1
+      --repeat_penalty 1.0
+    networks:
+      - ariadne-network
+
+  llama-cpp-server-cpu:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    restart: unless-stopped
+    volumes:
+      - ./models/others/${CPU_LLM}.gguf:/models/${CPU_LLM}.gguf:ro
+    # Custom-Startbefehl (Passe den Modellpfad/Parameter an)
+    ports:
+      - "44408:44408"
+    command: >
+      -m /models/${CPU_LLM}.gguf
+      --jinja
+      -c 20000
+      --host 0.0.0.0
+      --port 44408
+      --flash-attn on
+      --top-p 0.95
+      --top-k 20
+      --presence-penalty 1.5
+      --min-p 0.1
+      --repeat_penalty 1.0
+    networks:
+      - ariadne-network
+
+  llama-vlm-server:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    restart: unless-stopped
+    volumes:
+      - ./models/others/mmproj-SmolVLM2-500M-Video-Instruct-Q8_0.gguf:/models/mmproj-SmolVLM2-500M-Video-Instruct-Q8_0.gguf:ro
+      - ./models/others/SmolVLM2-500M-Video-Instruct-Q8_0.gguf:/models/SmolVLM2-500M-Video-Instruct-Q8_0.gguf:ro
+    # Custom-Startbefehl (Passe den Modellpfad/Parameter an)
+    ports:
+      - "44409:44409"
+    command: >
+      -m /models/SmolVLM2-500M-Video-Instruct-Q8_0.gguf 
+      --mmproj /models/mmproj-SmolVLM2-500M-Video-Instruct-Q8_0.gguf 
+      -c 2048 
+      -t 8 
+      -ngl 0 
+      --no-mmproj-offload 
+      --host 0.0.0.0 
+      --port 44409
+    networks:
+      - ariadne-network
+
+  llama-cpp-embedding-server:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    restart: unless-stopped
+    volumes:
+      - ./models/others/bge-m3-q4_k_m.gguf:/models/bge-m3-q4_k_m.gguf:ro
+    # Custom-Startbefehl (Passe den Modellpfad/Parameter an)
+    ports:
+      - "44441:44441"
+    command: >
+      -m /models/bge-m3-q4_k_m.gguf
+      --embeddings
+      --host 0.0.0.0
+      --port 44441
+      --parallel 2
+      --batch-size 4096
+      --ubatch-size 4096
+      -c 8192
+    networks:
+      - ariadne-network
+
+  falkordb:
+    image: falkordb/falkordb:latest
+    restart: unless-stopped
+    ports:
+      - "${AAA_FALKORDB_PORT:-44400}:6379"
+      - "3000:3000" # optional Web UI
+    environment:
+      # Redis-Args (Persistenz + Sicherheit + Sichtbarkeit)
+      REDIS_ARGS: "--protected-mode yes --bind 0.0.0.0 --requirepass ${AAA_FALKORDB_PASSWORD:-default} --appendonly yes --appendfsync everysec --aof-use-rdb-preamble yes --save 3600 1 --save 300 100 --save 60 10000 --dbfilename dump.rdb"
+      # FalkorDB-Args (z.B. Threads)
+      FALKORDB_ARGS: "THREAD_COUNT 4"
+    volumes:
+      - ./databases/falkordb:/var/lib/falkordb/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${AAA_FALKORDB_PASSWORD:-default} PING | grep -q PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    stop_grace_period: 20s
+    networks:
+      - ariadne-network
