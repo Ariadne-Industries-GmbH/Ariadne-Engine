@@ -4,11 +4,11 @@
   <img src="./images/ariadne_anyverse_agents.gif" alt="Ariadne Engine Agents"/>
 </div>
 
-**Automate complex AI workflows on your data — without losing control.**
+**Automate complex AI workflows on your data — with your private AI operating system**
 
 The **Ariadne Engine** is a **meta-system for data intelligence**, designed to **autonomously process and connect your data** using AI agents, knowledge graphs, and modular workflows. Unlike traditional LLM interfaces, it abstracts away the complexity of managing models and interactions — so you can focus on **extracting actionable insights from your data**.
 
-Built by **Ariadne Industries GmbH**, it is the technical backbone of **[Ariadne Anyverse](https://www.ariadneanyverse.de)**, a digital ecosystem where **data sovereignty meets AI automation**.
+Built by **Ariadne Industries GmbH**, it is the technical backbone of the **[Ariadne Anyverse](https://www.ariadneanyverse.de)**, a digital ecosystem where **data sovereignty meets AI automation**.
 
 ---
 
@@ -54,11 +54,17 @@ The Ariadne Engine is tailored for:
 
 Most LLM tools require you to manage models, agents, and workflows manually. The Ariadne Engine **handles the complexity for you**:
 
-✅ **Agentic automation**: Internal agents interact with LLMs, VLMs, and embeddings — **you define the workflows, not the infrastructure**.
+✅ **Agentic automation**: Internal agents interact with LLMs, VLMs, Speech Recognition and embeddings — **you define the workflows, not the infrastructure**.
 
 ✅ **Knowledge graphs**: Your data becomes a **connected intelligence layer**, enabling long-term reasoning across documents, APIs, and internal systems.
 
 ✅ **Full control**: Deploy on-premises for maximum privacy or use our cloud version (hosted in Germany, GDPR-compliant).
+
+✅ **Optimized for Technological Sovereignty**:
+- **Battle-tested with local LLMs** running on consumer hardware.
+- **No forced cloud dependency**: Works with open-source models (Ollama, Lama.cpp) and avoids vendor lock-in.
+- **Local, file based storage system** for maximum portability
+- **CPU-friendly for specific workflows**: use the scripting engine to build special data flows with multimodal AI models.
 
 > **Not just another LLM frontend**: The engine is designed to **orchestrate multi-modal AI workflows** — think of it as a **private AI operating system** for your data.
 
@@ -277,8 +283,8 @@ Deploy using `docker-compose.yml`. Below is the **official configuration** based
 ```yaml
 services:
   ariadne-engine:
-    image: ariadneindustries/ariadne-engine:0.1.0-rc.3-on-prem
-    restart: "no"
+    image: ariadneindustries/ariadne-engine:0.1.0-on-prem
+    restart: unless-stopped
     user: "${HOST_UID}:${HOST_GID}" # you can try to configure this to have better access to files on your host the engine creates within the docker container. OPTIONAL.
     ports:
       - "44444:44444"
@@ -303,7 +309,7 @@ services:
       - AAA_FALKORDB_HOST=falkordb # Defaults to "host.docker.internal". Must match the container name in `docker-compose.yml` if using a separate FalkorDB instance.
       - AAA_FALKORDB_PORT=6379 # Overrides default port of 44400. Only required if connecting to an external FalkorDB instance on non-default ports.
       - AAA_FALKORDB_PASSWORD=${AAA_FALKORDB_PASSWORD:-default} # Defaults to "default" if not set
-      # - AAA_LOCAL_AAA_PORT=44444 # defaults to 44444 -> sets in this setup the port for all microservices
+      # - AAA_LOCAL_AAA_PORT=44444 # defaults to 44444
       - AAA_IDENTITY_SOURCE=integrated-idp # default is ariadne-anyverse, for local setup it should be integrated-idp.
       - AAA_WORKER_PROCESSES=2 # Overrides default of 4 workers. Each worker uses around **4GB of RAM**.
     networks:
@@ -349,7 +355,7 @@ The Ariadne Engine uses **two types of storage** for your data, depending on you
   # Example from our docker-compose-example.yml
   falkordb:
     image: falkordb/falkordb:latest
-    restart: "no"
+    restart: unless-stopped
     ports:
       - "${AAA_FALKORDB_PORT:-44400}:6379"
       - "3000:3000" # optional Web UI
@@ -452,7 +458,7 @@ Deploy the UI webapp using `docker-compose.yml`. Add the following service to yo
 ```yaml
 services:
   ariadne-webapp:
-    image: ariadneindustries/ariadne-webapp:0.1.0-rc.2-web-bff
+    image: ariadneindustries/ariadne-webapp:0.1.0-web-bff
     restart: unless-stopped
     ports:
       - "43380:80"   # HTTP port for accessing the webapp

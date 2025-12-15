@@ -5,8 +5,8 @@ networks:
 
 services:
   ariadne-engine:
-    image: ariadneindustries/ariadne-engine:0.1.0-rc.3-on-prem
-    restart: "no"
+    image: ariadneindustries/ariadne-engine:0.1.0-on-prem
+    restart: unless-stopped
     user: "${HOST_UID}:${HOST_GID}"
     ports:
       - "44444:44444"
@@ -31,14 +31,14 @@ services:
       - AAA_FALKORDB_HOST=falkordb # Defaults to "host.docker.internal". Must match the container name in `docker-compose.yml` if using a separate FalkorDB instance.
       - AAA_FALKORDB_PORT=6379 # Overrides default port of 44400. Only required if connecting to an external FalkorDB instance on non-default ports.
       - AAA_FALKORDB_PASSWORD=${AAA_FALKORDB_PASSWORD:-default} # Defaults to "default" if not set
-      # - AAA_LOCAL_AAA_PORT=44444 # defaults to 44444 -> sets in this setup the port for all microservices
+      # - AAA_LOCAL_AAA_PORT=44444 # defaults to 44444
       - AAA_IDENTITY_SOURCE=integrated-idp # default is ariadne-anyverse, for local setup it should be integrated-idp.
       - AAA_WORKER_PROCESSES=2 # Overrides default of 4 workers. Each worker uses around **4GB of RAM**.
     networks:
       - ariadne-network
 
   ariadne-webapp:
-    image: ariadneindustries/ariadne-webapp:0.1.0-rc.2-web-bff
+    image: ariadneindustries/ariadne-webapp:0.1.0-web-bff
     restart: unless-stopped
     ports:
       - "43380:80"
@@ -53,7 +53,7 @@ services:
   
   llama-cpp-server: # for the CUDA llama.cpp server, you have to configure your Docker engine to use CUDA
     image: ghcr.io/ggml-org/llama.cpp:server-cuda
-    restart: "no"
+    restart: unless-stopped
     volumes:
       - ./models/others/${GPU_LLM}.gguf:/models/${GPU_LLM}.gguf:ro
       - ./models/others/${GPU_LLM_MMPROJ}.gguf:/models/${GPU_LLM_MMPROJ}.gguf:ro # optional for multimodal visual llms
@@ -89,7 +89,7 @@ services:
 
   llama-cpp-server-cpu:
     image: ghcr.io/ggml-org/llama.cpp:server
-    restart: "no"
+    restart: unless-stopped
     volumes:
       - ./models/others/${CPU_LLM}.gguf:/models/${CPU_LLM}.gguf:ro
     # Custom-Startbefehl (Passe den Modellpfad/Parameter an)
@@ -112,7 +112,7 @@ services:
 
   llama-vlm-server:
     image: ghcr.io/ggml-org/llama.cpp:server
-    restart: "no"
+    restart: unless-stopped
     volumes:
       - ./models/others/mmproj-SmolVLM2-500M-Video-Instruct-Q8_0.gguf:/models/mmproj-SmolVLM2-500M-Video-Instruct-Q8_0.gguf:ro
       - ./models/others/SmolVLM2-500M-Video-Instruct-Q8_0.gguf:/models/SmolVLM2-500M-Video-Instruct-Q8_0.gguf:ro
@@ -133,7 +133,7 @@ services:
 
   llama-cpp-embedding-server:
     image: ghcr.io/ggml-org/llama.cpp:server
-    restart: "no"
+    restart: unless-stopped
     volumes:
       - ./models/others/bge-m3-q4_k_m.gguf:/models/bge-m3-q4_k_m.gguf:ro
     # Custom-Startbefehl (Passe den Modellpfad/Parameter an)
@@ -153,7 +153,7 @@ services:
 
   falkordb:
     image: falkordb/falkordb:latest
-    restart: "no"
+    restart: unless-stopped
     ports:
       - "${AAA_FALKORDB_PORT:-44400}:6379"
       - "3000:3000" # optional Web UI
