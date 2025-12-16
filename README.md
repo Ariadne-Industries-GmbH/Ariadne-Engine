@@ -1,4 +1,4 @@
-# 🚀 Ariadne Engine On-Premises: Your Private AI Data Intelligence
+# 🚀 Ariadne Engine: Your Private AI Data Intelligence
 
 <div align="center">
   <img src="./images/ariadne_anyverse_agents.gif" alt="Ariadne Engine Agents"/>
