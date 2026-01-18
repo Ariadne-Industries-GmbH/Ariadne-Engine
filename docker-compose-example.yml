@@ -17,7 +17,7 @@ services:
       - ./models/docling:/app/aaa-bundle/models/docling:ro
       - ./models/faster-whisper:/app/aaa-bundle/models/faster-whisper
       - ./flow-scripts:/app/aaa-bundle/flow-scripts:ro
-      - ./mcp_servers.json:/app/aaa-bundle/mcp_servers.json:ro
+      - ./mcp_servers.json:/app/aaa-bundle/mcp_servers.json:ro  # Optional: If not provided, the engine will create a default empty configuration with zero global MCPs
       - ./model_config.json:/app/aaa-bundle/model_config.json:ro
     environment:
       - AAA_IDP_HOST=http://host.docker.internal:8000 # Defaults to "https://idp.ariadneanyverse.de" **but ignored if AAA_IDENTITY_SOURCE=integrated-idp**

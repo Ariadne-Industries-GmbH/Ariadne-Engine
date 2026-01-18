@@ -142,7 +142,7 @@ Tells the engine which models to use and how to connect to them.
 
 > ⚠️ The engine will fail to start in the local deployoment mode without this file and at least one model!
 
-### mcp_servers.json (Required)
+### mcp_servers.json (Optional)
 
 **Configures plugins and external integrations (e.g., APIs, databases).**
 
@@ -199,7 +199,7 @@ Tells the engine which models to use and how to connect to them.
 }
 ```
 
-> ⚠️ You need at least an empty `mcp_config.json` otherwise the Engine will NOT start!
+> ⚠️ The `mcp_servers.json` file is optional. If not provided, the engine will create a default empty configuration with zero global MCPs.
 
 
 **Minimal MCP Config**
@@ -230,7 +230,7 @@ project_root/
 └── flow-scripts/         # Custom Python flow scripts (Required)
 ```
 
-> ⚠️ The absence of any configuration files or directories mentioned above (`model_config.json`, `mcp_servers.json`) will cause the engine to fail during startup.
+> ⚠️ The absence of `model_config.json` will cause the engine to fail during startup. If `mcp_servers.json` is not provided, the engine will create a default empty configuration with zero global MCPs.
 
 > ⚠️ **First run takes time**: The engine auto-downloads `docling` and `faster-whisper` models (~10 min).
 
@@ -509,7 +509,7 @@ services:
 
    If any of the following are missing, the engine will fail to start or function properly:
    - `model_config.json` (Required for model endpoint configuration).
-   - `mcp_servers.json` (Required for synchronizing MCP-based plugins into the database).
+   - `mcp_servers.json` (Optional for synchronizing MCP-based plugins into the database. If not provided, the engine will create a default empty configuration with zero global MCPs).
    - `./flow-scripts/` directory (Required for loading custom flow scripts).
 
 ---
