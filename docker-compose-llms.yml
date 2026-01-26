@@ -114,6 +114,7 @@ services:
       --no-mmproj-offload 
       --host 0.0.0.0 
       --port 44409
+      --no-jinja
     networks:
       - ariadne-network
 
