@@ -415,6 +415,42 @@ skills/
     └── SKILL.md
 ```
 
+#### Skill Metadata for Efficient Runtime Filtering
+
+Ariadne's skills are a derivative of existing file-based skill systems used in agent runtimes, but the format is extended with explicit capability declarations in the `SKILL.md` frontmatter.
+
+In practice this means a skill can declare:
+- the internal tools it actually needs via `tools`
+- the MCP servers it depends on via `mcps`
+- for MCP-backed skills, the exact MCP tools to expose via namespaced tool references such as `mcp:<mcp_key>:<tool_name>`
+
+This improves runtime efficiency:
+- the engine can filter relevant tools and MCPs before loading the full skill body
+- MCP-backed skills can expose only the MCP tools they really need instead of an entire server surface
+- local LLMs spend fewer tokens on irrelevant capability descriptions, which improves prompt efficiency
+
+For best results, keep skills compact and structured:
+- use short sections such as `Goal`, `Use when`, `Workflow`, and `Rules`
+- prefer headings, flat lists, and small code blocks
+- keep the frontmatter `description` short and precise
+- declare the smallest useful set of `tools` and `mcps`
+
+Example:
+
+```yaml
+---
+name: web-research
+description: Search and scrape the web for focused research tasks.
+tools:
+  - mcp:ariadne-webresearch-mcp:search
+  - mcp:ariadne-webresearch-mcp:scrape
+mcps:
+  - ariadne-webresearch-mcp
+---
+```
+
+The top-level `skills/` directory is also where the curated Ariadne Engine skills from this repository can live in a public deployment. You can ship your own deployment-scoped skills there alongside the curated set.
+
 ### `flow-scripts/` (Optional)
 
 The `flow-scripts/` directory is used for custom Python workflows.
