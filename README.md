@@ -12,19 +12,22 @@ Built by **Ariadne Industries GmbH**, it is the technical backbone of the **[Ari
 
 ---
 
-## 🚀 Release v0.2.0: Advanced Skill System & Enhanced Automation
+## 🚀 Release v0.3.0: Autonomous Agents, Dreaming & Embedded Knowledge Graphs
 
-### What's New Since v0.1.0?
+### What's New Since v0.2.0?
 
-🔥 The Ariadne Engine has evolved significantly with **v0.2.0**, introducing a **powerful skill-based architecture** and numerous enhancements:
+🔥 The Ariadne Engine has evolved significantly with **v0.3.0**, introducing a fully reworked agent runtime, embedded memory systems, and a new model routing architecture:
 
-✅ **Skill-Based Agent System**: New modular skill system with dynamic loading and management \
-✅ **MCP-Based Skills**: Skills can now be backed by MCP servers for seamless integration \
-✅ **Skill Builder**: Create and manage custom skills directly through the engine \
-✅ **Enhanced Context Retrieval**: Improved tools for retrieving and managing contextual information \
-✅ **Advanced Job Scheduling**: Better scheduling capabilities with metadata and notifications \
-✅ **Document Processing**: Enhanced document extraction with VLM integration for images \
-✅ **System Prompt Improvements**: Better LLM guidance with skill-aware prompts
+✅ **Dreaming Runtimes**: Autonomous background thinking — schedule cron-like periods where the engine silently processes your data, refines memories, and prepares insights without user interaction \
+✅ **Embedded Long-Term Memory (LTM)**: Built-in episode creation, cache sync, and structured fact storage with Kuzu graph integration or FalkorDB support \
+✅ **Context Pruning & Compacting**: Token-based context management — automatically prunes tool outputs below a threshold and compactes older conversation history into summaries to control token costs \
+✅ **Subagent Delegation**: The engine can now spawn autonomous subagents that work on isolated tasks, delegate execution traces, and report results back to the master agent \
+✅ **Shell-like File Tools**: Replaced low-level tools with `fs_read_command`, `fs_write_command`, `edit_file`, and `write_file` for safer, sandbox-aware filesystem access \
+✅ **AI Notes System**: Lightweight markdown note-taking persisted across sessions — ideal for task logs, temporary plans, and working memory \
+✅ **New Model Routing Architecture**: Replaced hard-coded host setups with a flexible `model_config.json` routing system — use Ollama, llama.cpp, or any OpenAI-compatible API \
+✅ **Kuzu Embedded Graph Support**: Optional embedded Kuzu database as an alternative to FalkorDB for knowledge graphs and LTM, ideal for single-instance deployments \
+✅ **Reasoning Loops**: Built-in planner/validator pattern with toggleable thinking tokens for complex multi-step tasks \
+✅ **MCP Session Hardening**: Persistent HTTP and stdio sessions, proper environment handling for MCP servers \
 
 > **Stay tuned!** Follow our [GitHub](https://github.com/Ariadne-Industries-GmbH) or [LinkedIn](https://linkedin.com/company/ariadne-industries) for updates.
 
@@ -45,7 +48,7 @@ The Ariadne Engine is tailored for:
 Most LLM tools require you to manage models, agents, and workflows manually. The Ariadne Engine **handles the complexity for you**:
 
 ✅ **Agentic automation**: Internal agents interact with LLMs, VLMs, Speech Recognition and embeddings — **you define the workflows, not the infrastructure**. \
-✅ **Knowledge graphs**: Your data becomes a **connected intelligence layer**, enabling long-term reasoning across documents, APIs, and internal systems. \
+✅ **Knowledge graphs**: Your data becomes a **connected intelligence layer**, enabling long-term reasoning across documents, APIs, and internal systems. *(Powered by FalkorDB or embedded Kuzu)* \
 ✅ **Full control**: Deploy on-premises for maximum privacy or use our cloud version (hosted in Germany, GDPR-compliant). \
 ✅ **Optimized for Technological Sovereignty**:
 - **Battle-tested with local LLMs** running on consumer hardware.
@@ -61,11 +64,13 @@ Most LLM tools require you to manage models, agents, and workflows manually. The
 
 | Feature               | Description                                                                 |
 |-----------------------|-----------------------------------------------------------------------------|
-| **Skill-Based Agents** | Modular skills system with dynamic loading and MCP integration. Define custom skills and compose them for complex workflows. |
-| **Knowledge Graphs**  | Your data is structured as a **dynamic intelligence layer**, enabling cross-references and long-term context. *(No raw storage -> connected insights.)* |
-| **Modular AI Integration** | Supports LLMs, VLMs, and embeddings via APIs (e.g., Ollama, llama.cpp, or cloud providers). Configure once, use flexibly. |
+| **Skill-Based Agents** | Modular skill system with dynamic loading, MCP integration, and tool-aware filtering. Define custom skills and compose them for complex workflows. |
+| **Knowledge Graphs & LTM** | Structured fact storage powered by FalkorDB or embedded Kuzu. Long-term memory with cache syncing, chunking, and episode management. *(No raw storage -> connected insights.)* |
+| **Autonomous Subagents** | Spawn isolated background agents that work on delegated tasks, return execution traces, and scale your automation without blocking the main thread. |
+| **Dreaming Runtimes** | Schedule silent background thinking periods. The engine autonomously processes memories, refines context, and surfaces insights while you sleep. |
+| **Modular AI Integration** | Supports LLMs, VLMs, and embeddings via flexible model routing (`model_config.json`). Works with vLLM, llama.cpp, Ollama, or cloud providers. Configure once, use flexibly. Optimized for Gemma 4, Qwen3.x and Mistral LLMs. |
 | **Privacy by Design**  | Local-only processing or cloud privacy tiers — your choice. Hosted in Germany for compliance. |
-| **Job Scheduling** | Automate tasks and workflows with time-based triggers and notifications. |
+| **Job Scheduling & Automation** | Time-based triggers, notifications, and autonomous background processes with cron-like scheduling. |
 
 ---
 
@@ -75,10 +80,13 @@ Most LLM tools require you to manage models, agents, and workflows manually. The
 
 The Ariadne Engine comes with:
 1. **Pre-configured skill-based workflows**: Start automating tasks with built-in skills like document processing, context retrieval, and job scheduling.
-2. **Knowledge graph infrastructure**: FalkorDB-powered storage for your data as a connected intelligence layer.
-3. **Meta Agents**: Autonomous AI agents that interact with your data, models, and external systems on your behalf.
-4. **Skill Builder**: Create and manage custom skills directly through the engine interface.
-5. **UI Webapp**: A dashboard to visualize workflows, manage knowledge graphs, and chat with agents.
+2. **Knowledge graph infrastructure**: FalkorDB-powered or embedded Kuzu storage for your data as a connected intelligence layer.
+3. **Meta Agents & Subagents**: Autonomous agents that interact with your data, models, and external systems on your behalf — including isolated background workers.
+4. **Dreaming Runtimes**: Scheduled background thinking periods where the engine autonomously processes memories and prepares insights.
+5. **Embedded LTM & Context Management**: Token-aware pruning and compaction to keep conversations focused and cost-effective.
+6. **AI Notes System**: Lightweight markdown persistence for working memory, task tracking, and temporary notes.
+7. **Skill Builder**: Create and manage custom skills directly through the engine interface.
+8. **UI Webapp, Desktop App and Mobile App**: The all-in-one App to visualize workflows, manage knowledge graphs, chat with agents, and monitor subagents.
 
 ### 🔒 Privacy & Control
 
@@ -98,21 +106,21 @@ Choose how your data is processed:
 
 The Ariadne Engine offers two deployment methods:
 
-#### 1. Native Binary Deployment (New native Windows & Linux release in v0.2.0 - Recommended for most users)
+#### 1. Native Binary Deployment (Recommended for most users)
 
-For users who want the fastest path to a working installation, the recommended starting point in `v0.2.0` is the **native Windows / Linux binary**. You can download the release, start the executable, follow the launcher, and let the engine prepare the runtime for you.
+For users who want the fastest path to a working installation, the recommended starting point in `v0.3.0` is the **native Windows / Linux binary**. You can download the release, start the executable, follow the launcher, and let the engine prepare the runtime for you.
 
 **Requirements:**
-- [ ] **Windows 10/11** or **Linux** (Ubuntu 24.04+ recommended)
+- [ ] **Linux** (Ubuntu 24.04+ recommended) or **Windows 10/11**
 - [ ] **GPU recommended** (NVIDIA CUDA or Vulkan supported)
-- [ ] **6GB RAM minimum** (engine itself)
-- [ ] **10GB+ free disk space** (for model downloads and runtime assets)
+- [ ] **6GB RAM minimum** (engine itself + model runtime)
+- [ ] **10GB+ free disk space** (for model downloads, databases, and runtime assets)
 
 **Features:**
-- ✅ **Automatic model downloads** - The launcher automatically downloads required models (Ministral 3B/8B/14B, BGE-M3 embeddings, faster-whisper)
-- ✅ **Interactive setup wizard** - Guided configuration for privacy mode, AI brain selection, and hardware optimization
+- ✅ **Automatic model downloads** - The launcher automatically downloads required models (Qwen3.6 35B MoE, Qwen3.5 9B, Gemma 4e4b, Ministral 8B/14B, BGE-M3 embeddings, faster-whisper). You decide what you need!
+- ✅ **Interactive setup wizard** - Guided configuration for privacy mode, AI Brain selection, and hardware optimization
 - ✅ **Companion app integration** - Optional desktop app launcher
-- ✅ **Hardware detection** - Automatic GPU/CPU detection and optimization
+- ✅ **Hardware detection** - Automatic GPU/CPU detection and optimization with preset profiles
 - ✅ **Manual mode** - Advanced users can manage their own `model_config.json` and inference stack
 
 **Download**: Get the latest binary from our [releases page](https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine/releases).
@@ -148,22 +156,25 @@ The native deployment prepares the runtime next to the executable. Depending on 
 ```
 engine_directory/
 ├── databases/
-│   └── falkordb/                     # FalkorDB data if you use graph features
+│   ├── <identity_key directories># User-specific embedded databases and directories
+│   └── falkordb/                 # FalkorDB data if you use graph features
 ├── models/
-│   ├── docling/                      # Docling models (auto-downloaded)
-│   ├── faster-whisper/               # faster-whisper models (auto-downloaded)
-│   └── others/                       # LLM, VLM, and embedding models
-├── llama_cpp/                        # Managed llama.cpp server binaries
-├── flow-scripts/                     # Optional custom Python flow scripts
-├── skills/                           # Optional global skills
-├── model_config.json                 # Auto-generated or manual, depending on setup
-├── mcp_servers.json                  # Optional, created empty when needed
-├── startup_runtime_setup.json        # Launcher configuration and setup state
+│   ├── docling/                  # Docling models (auto-downloaded)
+│   ├── faster-whisper/           # faster-whisper models (auto-downloaded)
+│   └── others/                   # LLM, VLM, and embedding models (from model_catalog.json)
+├── llama_cpp/                    # Managed llama.cpp server binaries
+├── flow-scripts/                 # Optional custom Python flow scripts
+├── skills/                       # Optional global skills
+├── model_config.json             # Model routing configuration (auto-generated or manual)
+├── model_catalog.json            # Auto-generated catalog of available models and presets
+├── mcp_servers.json              # Optional, created empty when needed
+├── startup_runtime_setup.json    # Launcher configuration and setup state
 ├── llama_server_launcher_config.json # Auto-generated local inference config
-└── ariadne_engine_app                # Optional companion app
+├── dreaming_runtime_config.json  # Scheduled background thinking (optional)
+└── ariadne_engine_app            # Optional companion app
 ```
 
-> **Background**: In `v0.2.0`, the launcher can generate and maintain large parts of the local runtime automatically. This is the main reason why the native binary is now the easiest path for users who want a self-hosted AI engine without manually wiring every service.
+> **Background**: In `v0.3.0`, the launcher reads from a declarative `model_catalog.json` to auto-generate runtime configurations with curated presets like "Runs Everywhere" or "Qwen Quality Reasoning". This is the main reason why the native binary is now the easiest path for users who want a self-hosted AI engine without manually wiring every service.
 
 **Starting the engine after setup**
 
@@ -191,12 +202,13 @@ If you select `Manual` mode, the launcher does **not** build a managed local mod
 
 This mode is intended for users who want to:
 - use their own `llama.cpp` servers
-- use `Ollama`
-- use another supported provider
+- use `vLLM`, `Ollama` or other OpenAI-compatible APIs
 - maintain `model_config.json` themselves
 - skip automatic local model downloads entirely
 
 > **Important**: In `Manual` mode, starting the server stays blocked until exclusive local privacy has at least one valid model entry in `model_config.json`.
+
+
 
 #### 2. Docker Deployment (For technical users - isolated environment)
 
@@ -205,11 +217,163 @@ Docker is the more explicit and more configurable deployment path. It is the bet
 **Requirements:**
 - [ ] **Docker** (v20.10+)
 - [ ] **Docker Compose**
-- [ ] **GPU recommended**
-- [ ] **6GB RAM minimum** (engine requires 6GB, but local models need more)
-- [ ] **16GB RAM recommended** for full local model support
+- [ ] **GPU recommended** (for local model inference)
+- [ ] **16GB RAM minimum** (engine workers use ~4GB each, plus model RAM)
+- [ ] **32GB+ RAM recommended** for full local model support with multiple workers
 
 > **Pro Tip**: Use our [`docker-compose-example.yml`](https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine/blob/main/docker-compose-example.yml) as the main reference for a full backend + frontend setup, and [`docker-compose-llms.yml`](https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine/blob/main/docker-compose-llms.yml) for additional local `llama.cpp` server examples.
+
+**Example Docker Compose Configuration**
+
+This example uses the **Long format Volumes** pattern to prevent the Docker daemon from auto-creating host directories, and sets up the engine with local model servers (Gemma 4e4b + Qwen3.6 MoE):
+
+```yaml
+networks:
+  ariadne-network:
+    driver: bridge
+
+services:
+  falkordb:
+    image: falkordb/falkordb:latest
+    restart: unless-stopped
+    ports:
+      - "44400:6379"
+    volumes:
+      - type: bind
+        source: ./databases/falkordb
+        target: /data
+        bind:
+          create_host_path: false
+    networks:
+      - ariadne-network
+
+  llama-cpp-gpu-server:
+    image: ghcr.io/ggml-org/llama-cpp:latest
+    restart: unless-stopped
+    ports:
+      - "44410:8080"
+    volumes:
+      - type: bind
+        source: ./models/others
+        target: /models
+        bind:
+          create_host_path: false
+    command: >
+      --model /models/gemma-4-e4b.gguf
+      --jinja -c 65536 --port 8080 -ngl 99 --top-k 20 --top-p 0.95 --flash-attn
+    depends_on:
+      - falkordb
+    networks:
+      - ariadne-network
+
+  llama-cpp-embedding-server:
+    image: ghcr.io/ggml-org/llama-cpp:latest
+    restart: unless-stopped
+    ports:
+      - "44441:8080"
+    volumes:
+      - type: bind
+        source: ./models/others
+        target: /models
+        bind:
+          create_host_path: false
+    command: >
+      --model /models/BGE-M3Embedding.gguf
+      --jinja -c 8192 --port 8080 -ngl 99
+    networks:
+      - ariadne-network
+
+  ariadne-engine:
+    image: ariadneindustries/ariadne-engine:0.3.0-on-prem
+    restart: unless-stopped
+    ports:
+      - "44444:44444"
+    volumes:
+      - type: bind
+        source: ./databases
+        target: /app/aaa-bundle/databases
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./models/docling
+        target: /app/aaa-bundle/models/docling
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./models/faster-whisper
+        target: /app/aaa-bundle/models/faster-whisper
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./flow-scripts
+        target: /app/aaa-bundle/flow-scripts
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./skills
+        target: /app/aaa-bundle/skills
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./model_config.json
+        target: /app/aaa-bundle/model_config.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./mcp_servers.json
+        target: /app/aaa-bundle/mcp_servers.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./dreaming_runtime_config.json
+        target: /app/aaa-bundle/dreaming_runtime_config.json
+        read_only: true
+        bind:
+          create_host_path: false
+    environment:
+      - AAA_IDENTITY_SOURCE=integrated-idp
+      - AAA_EMBEDDINGS_BASE_URL=http://llama-cpp-embedding-server:8080/v1
+      - AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED=true
+      - AAA_IS_PRIVACY_LEVEL_PREMIUM_ENABLED=false
+      - AAA_GRAPHITI_BACKEND=falkordb
+      - AAA_FALKORDB_HOST=falkordb
+      - AAA_FALKORDB_PORT=6379
+      - AAA_FALKORDB_PASSWORD=${AAA_FALKORDB_PASSWORD:-default}
+      - AAA_WORKER_PROCESSES=4
+      - AAA_DREAMING_RUNTIME_CONFIG=/app/aaa-bundle/dreaming_runtime_config.json
+      - AAA_CONTEXT_PRUNE_PROTECT_TOKENS=70000
+      - AAA_CONTEXT_COMPACT_THRESHOLD_TOKENS=90000
+      - AAA_FASTER_WHISPER_MODEL=small
+      - AAA_FASTER_WHISPER_DEVICE=cuda
+    depends_on:
+      - falkordb
+      - llama-cpp-gpu-server
+      - llama-cpp-embedding-server
+    networks:
+      - ariadne-network
+
+  ariadne-webapp:
+    image: ariadneindustries/ariadne-webapp:0.3.0-web-bff
+    restart: unless-stopped
+    ports:
+      - "43380:80"
+      - "44380:443"
+    environment:
+      - AAA_ENDPOINT_URL=http://host.docker.internal:44444/endpoint
+      - IDP_BASE_URL=http://host.docker.internal:44444/integrated_idp
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - ariadne-network
+```
+
+See `docker-compose-example.yml` in this repository for a full setup including local model servers and FalkorDB.
 
 ---
 
@@ -219,63 +383,54 @@ The engine can work with a mix of automatically generated runtime state, manuall
 
 ### `model_config.json`
 
-This file tells the engine which models to use and how to connect to them.
+This file tells the engine which models to use, how to connect to them, and where to route requests. It replaces the previous hard-coded host setups with a flexible routing system.
 
 **When is it required?**
 
-- **Native / Guided Setup**: It can be created automatically by the launcher
+- **Native / Guided Setup**: The launcher auto-generates this file based on your hardware and preferences
 - **Native / Manual Mode**: You must provide and maintain it yourself
 - **Docker / local exclusive privacy**: In practice, you usually provide it manually
 - **Cloud-only setups**: Local model entries are not needed if you do not use exclusive local privacy
 
-#### Example (using built-in models)
+#### Example (Qwen3.6 MoE + Gemma 4e4b)
 
 ```json
 {
-  "ministral-3-3b": {
+  "gemma-4-e4b": {
     "url": "http://localhost:44410/v1",
     "provider": "llama.cpp",
+    "proxy_family": "gemma4",
     "privacy_level": "Exclusive",
-    "temperature": 0.2,
+    "temperature": 0.7,
+    "input_modalities": ["text"],
+    "output_modalities": ["text"]
+  },
+  "qwen3-6-35b-a3b": {
+    "url": "http://localhost:44410/v1",
+    "provider": "llama.cpp",
+    "proxy_family": "qwen3_6",
+    "privacy_level": "Exclusive",
+    "temperature": 1.0,
+    "reasoning_effort": "none",
     "input_modalities": ["text", "image"],
     "output_modalities": ["text"]
   },
   "ministral-3-8b": {
     "url": "http://localhost:44411/v1",
     "provider": "llama.cpp",
+    "proxy_family": "ministral3",
     "privacy_level": "Exclusive",
     "temperature": 0.2,
     "input_modalities": ["text", "image"],
     "output_modalities": ["text"]
-  }
-}
-```
-
-#### Example (custom models)
-
-```json
-{
-  "qwen3-32b-vl": {
+  },
+  "qwen3-6-27b-q4": {
     "url": "http://localhost:44410/v1",
     "provider": "llama.cpp",
+    "proxy_family": "qwen3_5",
     "privacy_level": "Exclusive",
-    "temperature": 0.2,
-    "input_modalities": ["text", "image"],
-    "output_modalities": ["text"]
-  },
-  "smolvlm2-500M": {
-    "url": "http://localhost:44409/v1",
-    "provider": "llama.cpp",
-    "privacy_level": "Exclusive",
-    "temperature": 0.8,
-    "input_modalities": ["text", "image"],
-    "output_modalities": ["text"]
-  },
-  "bitnet-local-gguf": {
-    "url": "http://localhost:44411/v1",
-    "provider": "bitnet.cpp",
-    "privacy_level": "Exclusive",
-    "temperature": 0.4,
+    "temperature": 0.6,
+    "reasoning_effort": "none",
     "input_modalities": ["text"],
     "output_modalities": ["text"]
   }
@@ -283,39 +438,25 @@ This file tells the engine which models to use and how to connect to them.
 ```
 
 > ⚠️ If exclusive local privacy is enabled, the engine needs at least one valid local model in `model_config.json`.
-> If your system has less than 12GB RAM or no powerfull GPU, consider using cloud models or an external LLM provider.
+> If your system has less than 16GB RAM or no powerful GPU, consider using cloud models or an external LLM provider.
 
-#### Native Deployment - Automatic Generation
+**Native Deployment - Automatic Generation**
 
-**Automatic configuration available.** The binary launcher can automatically generate this file based on your hardware and preferences.
+**Automatic configuration available.** The binary launcher can automatically generate this file based on the presets from `model_catalog.json`:
 
-**Auto-generated format:**
+| Preset ID | Recommended Hardware | Model | Context Size |
+|-----------|---------------------|-------|-------------|
+| `runs_everywhere` | 16GB+ RAM, no GPU required | Gemma 4e4b | 65K tokens |
+| `gemma_starter_gpu` | 8GB+ VRAM | Gemma 4e4b | 100K tokens |
+| `gemma_quality_gpu` | 18GB+ VRAM | Gemma 4-26B A4B Q4 | 110K tokens |
+| `ministral_balanced_gpu` | 10GB+ VRAM | Ministral 3-8B | 110K tokens |
+| `ministral_quality_gpu` | 16GB+ VRAM | Ministral 3-14B | 110K tokens |
+| `qwen_compact` | 10GB+ VRAM | Qwen3.5 9B Q4 | 65K tokens |
+| `qwen_quality_reasoning` | 20GB+ VRAM | Qwen3.6 27B Q4 | 110K tokens |
+| `qwen_moe_balanced` | 16GB VRAM + 8GB RAM | Qwen3.6 35B A3B IQ4_XS | 220K tokens |
+| `qwen_moe_dual_gpu` | 2 GPUs with similar VRAM | Qwen3.6 35B A3B Q4 | 262K tokens |
 
-```json
-{
-  "ministral-3-3b": {
-    "url": "http://localhost:44410/v1",
-    "provider": "llama.cpp",
-    "privacy_level": "Exclusive",
-    "temperature": 0.2,
-    "input_modalities": ["text", "image"],
-    "output_modalities": ["text"]
-  }
-}
-```
-
-**Features:**
-- ✅ **Automatic model selection** - Based on your hardware capabilities
-- ✅ **Hardware-optimized configuration** - Context size, parallel processing, etc.
-- ✅ **Multi-model support** - Can include multiple Ministral models (3B, 8B, 14B)
-- ✅ **Manual override** - You can edit the auto-generated file
-
-**Model keys used by auto-generation:**
-- `ministral-3-3b`: Fast, low-memory usage (3B parameters)
-- `ministral-3-8b`: Balanced performance (8B parameters)
-- `ministral-3-14b`: Highest quality (14B parameters)
-
-> **Note**: If you use manual mode during setup, you must provide this file yourself. The launcher will not auto-generate it.
+> **Note**: If you use manual mode during setup, you must provide `model_config.json` yourself. The launcher will not auto-generate it.
 
 ### `mcp_servers.json` (Optional)
 
@@ -396,16 +537,9 @@ We follow closely the Claude Desktop Config so you can mostly copy the config fo
 }
 ```
 
-### `skills/` (New in v0.2.0)
+### `skills/` (Recommended)
 
-The new skill system is one of the most important additions in `v0.2.0`.
-
-Global skills can be shipped in a top-level `skills/` directory. If the directory exists, the engine will discover and load valid `SKILL.md`-based skills from it. If the directory does not exist, the engine simply proceeds without global deployment-scoped skills.
-
-This means:
-- the directory is **recommended** if you want to ship reusable skills with your deployment
-- the directory is **not mandatory** for the engine to boot
-- user-specific skills can still exist separately inside user storage
+The skill system allows you to ship reusable, capability-declared skills alongside your deployment. If the `skills/` directory exists, the engine discovers and loads valid `SKILL.md`-based skills from it. If absent, the engine proceeds without global deployment-scoped skills.
 
 **Minimal structure**
 
@@ -449,8 +583,6 @@ mcps:
 ---
 ```
 
-The top-level `skills/` directory is also where the curated Ariadne Engine skills from this repository can live in a public deployment. You can ship your own deployment-scoped skills there alongside the curated set.
-
 ### `flow-scripts/` (Optional)
 
 The `flow-scripts/` directory is used for custom Python workflows.
@@ -460,10 +592,94 @@ This is important historically:
 - in the current implementation, missing flow-script directories are tolerated and created when needed
 - custom flows themselves are still optional
 
-So the correct practical interpretation for `v0.2.0` is:
+So the correct practical interpretation for `v0.3.0` is:
 - **custom flows are optional**
 - the engine can handle a missing `flow-scripts/` directory
 - if you want custom workflows, this is the place to put them
+
+---
+
+### ✨ New v0.3.0 Configuration Files
+
+#### `dreaming_runtime_config.json`
+
+Defines schedules for autonomous background thinking (Dreaming). During these sessions, the engine autonomously:
+
+- **Analyzes recent context** to identify important patterns and insights
+- **Prunes stale or low-value entries** from working context
+- **Consolidates fragmented memories** into structured long-term representations
+- **Generates AI Notes** for recurring themes or actionable findings
+
+If omitted, the engine falls back to interval-based dreaming using `AAA_DREAMING_RUNTIME_INTERVAL_SECONDS`. You can also point the engine to a custom location via `AAA_DREAMING_RUNTIME_CONFIG=/path/to/config.json`.
+
+```json
+{
+  "timezone": "Europe/Berlin",
+  "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+  "times_of_day": ["02:00", "14:30"],
+  "cooldown_minutes": 60
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `weekdays` | `string[]` | Weekday names (e.g., `"monday"`, `"tuesday"`). Names are normalized to 3-letter abbreviations internally. **Must contain at least one entry.** If omitted, falls back to interval-based mode. |
+| `times_of_day` | `string[]` | 24-hour times in `"HH:MM"` format (e.g., `["02:00", "14:30"]`). Duplicates are silently ignored. **Must contain at least one entry.** If omitted, no scheduled runs trigger. |
+| `timezone` | `string` | IANA timezone (e.g., `"Europe/Berlin"`). Determines the clock used for schedule evaluation. Required for scheduling to function. |
+| `cooldown_minutes` | `number` | Minimum minutes between Dreaming runs. Overrides `AAA_DREAMING_RUN_COOLDOWN_SECONDS`. Default: `720` (12 hours) via ENV. |
+
+> **Environment variables as fallbacks:** When no schedule config file is provided, the engine uses interval-based timing via `AAA_DREAMING_RUNTIME_INTERVAL_SECONDS` (default: `7200` / 2 hours). Setting `weekdays` or `times_of_day` to an empty array `[]` in a valid config file disables scheduled dreaming. Providing invalid JSON causes a graceful fallback to environment variables without crashing.
+
+#### `local_automation_policy.json`
+
+Defines which local filesystem directories the engine's autonomous agents may access and in which terminal runtime mode shell commands execute. This is your primary security boundary for local automation.
+
+Override the config path with `AAA_LOCAL_AUTOMATION_POLICY_CONFIG`. The engine resolves it in this order:
+1. Path from `AAA_LOCAL_AUTOMATION_POLICY_CONFIG`
+2. Next to `MODEL_CONFIG_PATH`
+3. Host directory of the application (`local_automation_policy.json`)
+
+```json
+{
+  "roots": [
+    {
+      "path": "/home/user/projects/my-app",
+      "access": "rwx",
+      "requires_approval": true
+    },
+    {
+      "path": "/home/user/shared-reference",
+      "access": "ro"
+    }
+  ],
+  "terminal_runtime_mode": "linux_sandbox",
+  "linux_sandbox": {
+    "network_access": true,
+    "allow_host_tmp": false,
+    "allow_env_tmpdir": false,
+    "additional_read_roots": ["/home/user/.cache/pip"],
+    "additional_writable_roots": [],
+    "hidden_roots": ["/home/user/projects/my-app/.env-secrets"],
+    "protected_relative_paths": [".git", ".venv"]
+  }
+}
+```
+
+**`terminal_runtime_mode` options:**
+- **`disabled`** — No terminal tools available. All terminal-related calls are rejected. The Engine uses simple `fs_read_command` and `fs_write_command`. Highest security, any OS.
+- **`linux_sandbox`** — Shell commands run inside a Bubblewrap sandbox with a restricted filesystem namespace. System paths (`/usr`, `/bin`, etc.) are read-only; only configured roots are mounted with their declared access level. Protected sub-paths (`.git`, `.venv`) are overlaid as read-even-within-writable-roots. Requires Linux with `bubblewrap` installed — falls back to `disabled` if unavailable.
+- **`trusted_host`** — Shell commands execute directly on the host without sandboxing. The engine still validates that `working_directory` is within an allowed root, but system-level protections are absent. Use only in disposable VMs, isolated dev machines, or container environments where host access is already externally bounded.
+
+**Access Levels:**
+- **`ro`** — Read files only (via `fs_read_command`)
+- **`rw`** — Read + write via file tools (`edit_file`, `write_file`, `apply_patch`). Shell commands are **not** permitted.
+- **`rwx`** — Full access: read, write via file tools **and** shell execution via `exec_terminal_command`.
+
+> **Important:** Shell access is intentionally stricter than file tools. Writing files via shell commands (`echo > file`, `cp`, etc.) is only allowed in `rwx` roots. A `rw` root is writable for the file-editing tools but does not grant bash write permissions — this prevents accidental file modification through terminal commands in non-privileged directories.
+
+Each root can optionally set `"requires_approval": true` to enforce a user confirmation dialog before any tool accesses that directory.
+
+For a comprehensive explanation of sandbox internals, security guarantees, and practical configuration patterns, see [`local_automation_policy.md`](https://github.com/Ariadne-Industries/ariadne-engine/blob/main/local_automation_policy.md) in the [Ariadne Engine source](https://github.com/Ariadne-Industries/ariadne-engine).
 
 ---
 
@@ -477,245 +693,118 @@ The Ariadne Engine uses different storage layers depending on which features you
 - **What's stored**:
   - User-specific configurations
   - Temporary or session-based data
-  - Embedded databases for lightweight storage
+  - Embedded Kuzu databases for lightweight storage
   - Uploaded files
 - **How it works**:
-  The engine manages these folders automatically. No manual setup is required for normal operation.
+The engine manages these folders automatically. No manual setup is required for normal operation.
 
-### 2. FalkorDB (Required for Knowledge Graphs and Long-Term Memory)
+### 2. Graph Backends: FalkorDB or Kuzu
 
+Choose your graph backend via the `AAA_GRAPHITI_BACKEND` environment variable:
+
+**FalkorDB (External Service - Recommended for Scaling Cloud Environments)**
 - **Location**: Usually `./databases/falkordb/` in Docker setups
 - **What's stored**:
   - Knowledge graphs
   - Long-term memory data
   - Graph-oriented connections across documents and structured entities
+- **When to use**: Multi-user deployments, production environments, or when you want graph features independent of the engine container
+
+**Kuzu (Embedded - Recommended for Single-Instance)**
+- **Location**: `./databases/user_*/` (embedded per-user)
+- **What's stored**: Same as FalkorDB but embedded directly in the user database directory
+- **When to use**: Single-instance deployments, local-only setups, or when you want zero external dependencies
+- Set `AAA_GRAPHITI_BACKEND=kuzu` to enable embedded mode
 
 **Important background**
 
-- The engine itself can run **without** FalkorDB.
-- If FalkorDB is missing, the engine still works, but **knowledge graphs and graph-backed long-term memory are unavailable**.
-- In `v0.2.0`, this also applies to the native binary deployment: knowledge graphs still depend on an available FalkorDB service.
+- The engine itself can run **without** a graph backend.
+- If no graph backend is available, the engine still works, but **knowledge graphs and graph-backed long-term memory are unavailable**.
+- In `v0.3.0`, you can freely switch between FalkorDB and Kuzu at runtime via environment variables — no migration required for existing data.
 
-**Recommended FalkorDB service**
+**Recommended FalkorDB service** (for Docker):
 
 ```yaml
 falkordb:
   image: falkordb/falkordb:latest
   restart: unless-stopped
   ports:
-    - "${AAA_FALKORDB_PORT:-44400}:6379"
-    - "3000:3000" # optional Web UI
-  environment:
-    # Redis-Args (Persistence + security + visibility)
-    REDIS_ARGS: "--protected-mode yes --bind 0.0.0.0 --requirepass ${AAA_FALKORDB_PASSWORD:-default} --appendonly yes --appendfsync everysec --aof-use-rdb-preamble yes --save 3600 1 --save 300 100 --save 60 10000 --dbfilename dump.rdb"
-    # FalkorDB arguments
-    FALKORDB_ARGS: "THREAD_COUNT 4"
+    - "44400:6379"
   volumes:
-    - ./databases/falkordb:/var/lib/falkordb/data
-  healthcheck:
-    test: ["CMD-SHELL", "redis-cli -a ${AAA_FALKORDB_PASSWORD:-default} PING | grep -q PONG"]
-    interval: 10s
-    timeout: 3s
-    retries: 10
-  stop_grace_period: 20s
-  networks:
-    - ariadne-network
+    - type: bind
+      source: ./databases/falkordb
+      target: /data
+      bind:
+        create_host_path: false
 ```
 
 ---
 
-## Deploy Like a Pro: Docker Setup
+## 🔧 Configuration (v0.3.0 Update)
 
-Docker is the better choice when you want a more explicit, service-oriented setup with separate containers for:
-- the Ariadne Engine backend
-- the Ariadne Webapp frontend
-- optional local `llama.cpp` model servers
-- FalkorDB
+The 0.3.0 release introduces a highly modular configuration model centered around flexible JSON routing files and environment variables. The previous hard-coded host setups are now replaced by this system.
 
-### Directory Structure
+**Essential Environment Variables:**
+- `AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED` (default: `true`): Enables exclusive local model access via `model_config.json`.
+- `AAA_EMBEDDINGS_BASE_URL`: **Required** for embeddings and retrieval features. Set to your embedding server endpoint (e.g., `http://llama-cpp-embedding-server:8080/v1`).
+- `AAA_GRAPHITI_BACKEND`: Choose between `kuzu` (embedded per-user database) or `falkordb` (external graph service). Default for Docker is `falkordb`.
+- `MODEL_CONFIG_PATH`: Recommended path to your local model routing configuration.
 
-Create the following structure in your project root:
+**New v0.3.0 Context Pruning & Compacting Variables:**
+- **`AAA_CONTEXT_PRUNE_PROTECT_TOKENS`** (default: `70000`): Token threshold for the Context Pruner. Below this value, no tool outputs or history are trimmed to preserve system stability and core memory.
+- **`AAA_CONTEXT_COMPACT_THRESHOLD_TOKENS`** (default: `90000`): Trigger for "Hard Compaction". When context exceeds this value, older chat history is compressed into a summary to control token costs.
+- **`AAA_CONTEXT_COMPACT_RECENT_USER_BUDGET_TOKENS`** (default: `0`): Token budget for recent user messages within the compacted window. Ensures current user input is protected from aggressive compression.
+- **`AAA_CONTEXT_COMPACT_SUMMARY_MAX_CHARS`** (default: `12000`): Maximum character count for AI-generated summaries of old chat fragments during compaction. Balances context preservation and memory optimization.
+- **`AAA_CONTEXT_PRUNE_PROTECTED_TOOLS`** (default: empty tuple): List of tool names whose outputs are never trimmed or compressed. Critical for system or API responses that must appear exactly as returned.
 
-```
-project_root/
-├── databases/
-│   └── falkordb/         # FalkorDB data (auto-created)
-├── models/
-│   ├── docling/          # Docling models (auto-downloaded)
-│   ├── faster-whisper/   # faster-whisper models (auto-downloaded)
-│   └── others/           # LLM, VLM, and embedding models
-├── flow-scripts/         # Optional custom Python flow scripts
-├── skills/               # Optional global skills for v0.2.0+
-├── mcp_servers.json      # Optional global MCP config
-└── model_config.json     # Required for local exclusive model setups
-```
+---
 
-> ⚠️ The absence of `model_config.json` will cause startup problems when you enable exclusive local privacy without any configured local model. If `mcp_servers.json` is not provided, the engine can create a default empty configuration with zero global MCPs.
+## Environment Variables & `.env` Setup
 
-> ⚠️ **First run takes time**: The engine auto-downloads `docling` and `faster-whisper` models (~10 min).
+#### 🐳 Docker Deployment (Recommended)
 
-> **Pro Tip**: Use our [`docker-compose-example.yml`](https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine/blob/main/docker-compose-example.yml) as the full-stack reference and [`docker-compose-llms.yml`](https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine/blob/main/docker-compose-llms.yml) for alternative local model server setups.
-
-### AI Model Dependencies
-
-Ensure the following models are available in their respective directories:
-
-1. **LLM Models**:
-
-   You can use additional LLM models by downloading them from Hugging Face and hosting them via `llama.cpp` or `ollama`.
-   Add configurations for these models in the `model_config.json` file under their desired display names.
-
-   Models that we currently recommend:
-   - https://huggingface.co/unsloth/Ministral-3-14B-Instruct-2512-GGUF
-   - https://huggingface.co/unsloth/Ministral-3-8B-Instruct-2512-GGUF
-   - https://huggingface.co/unsloth/Ministral-3-3B-Instruct-2512-GGUF
-
-   Place the downloaded file in `./models/others/` if you follow the Docker Compose example of this repository.
-
-2. **VLM Model**:
-
-   You can use additional VLM models by downloading them from Hugging Face and hosting via `llama.cpp`.
-   Currently recommended model: SmolVLM2-500M-Video-Instruct (fast on CPU, suitable for document processing).
-   - https://huggingface.co/ggml-org/SmolVLM2-500M-Video-Instruct-GGUF
-
-   Place the downloaded file in `./models/others/` if you follow the Docker Compose example of this repository.
-
-3. **Embeddings Model**:
-
-   You can use additional embedding models by downloading them from Hugging Face and hosting via `llama.cpp`. The `AAA_EMBEDDINGS_BASE_URL` in the Docker Compose file allows you to point to any `llama.cpp`-compatible server or OpenAI-compliant embedding APIs.
-   Currently recommended model: BGE-M3, which is fast on CPU and suitable for text processing pipelines.
-   - https://huggingface.co/bbvch-ai/bge-m3-GGUF
-
-   Place the downloaded file in `./models/others/` if you follow the repository's Docker Compose example.
-
-4. **faster-whisper & Docling Models**:
-   - **Docker**: These are automatically downloaded by the engine if missing from their respective directories (`./models/faster-whisper` and `./models/docling`)
-   - **Binary**: Automatically downloaded during the first run setup process
-
-> We provide a few Docker Compose setups with `llama.cpp` for some good local open source LLMs in `docker-compose-llms.yml`.
-
-### Docker Compose Example (Backend + Frontend)
-
-Deploy using `docker-compose.yml`. Below is a representative setup based on `docker-compose-example.yml`. It shows the engine backend and the webapp frontend together, which is the most common self-hosted Docker deployment pattern.
-
-```yaml
-networks:
-  ariadne-network:
-    driver: bridge
-
-services:
-  ariadne-engine:
-    image: ariadneindustries/ariadne-engine:0.2.0-on-prem
-    restart: unless-stopped
-    user: "${HOST_UID}:${HOST_GID}" # you can try to configure this to have better access to files on your host the engine creates within the docker container. OPTIONAL.
-    ports:
-      - "44444:44444"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - ./databases:/app/aaa-bundle/databases
-      - ./models/docling:/app/aaa-bundle/models/docling:ro
-      - ./models/faster-whisper:/app/aaa-bundle/models/faster-whisper
-      - ./flow-scripts:/app/aaa-bundle/flow-scripts:ro
-      - ./skills:/app/aaa-bundle/skills:ro # optional global skills for v0.2.0+
-      - ./mcp_servers.json:/app/aaa-bundle/mcp_servers.json:ro # Optional: if not provided, the engine can create a default empty configuration with zero global MCPs
-      - ./model_config.json:/app/aaa-bundle/model_config.json:ro
-    environment:
-      - AAA_IDP_HOST=http://host.docker.internal:8000 # Defaults to "https://idp.ariadneanyverse.de" **but ignored if AAA_IDENTITY_SOURCE=integrated-idp**
-      - AAA_EMBEDDINGS_BASE_URL=http://llama-cpp-embedding-server:44441/v1 # Required for embeddings functionality. **Error if not set.**
-      - AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED=true # Defaults to true. Enables Exclusive LLMs based on model_config.json (default for local-only configurations).
-      - AAA_IS_PRIVACY_LEVEL_PREMIUM_ENABLED=false # Defaults to true. When enabled, use Premium-level privacy LLMs provided by Ariadne Industries.
-      - AAA_IS_PRIVACY_LEVEL_STANDARD_ENABLED=false # Defaults to true. When enabled, use Standard-level privacy LLMs provided by Ariadne Industries.
-      - AAA_ACTIVATE_WEB_SEARCH_SUBAGENT=false # Defaults to false. When disabled, web search subagent is inactive. Currently not supported locally.
-      - AAA_FASTER_WHISPER_MODEL=small # default is large-v3-turbo. Small is good for most cases and fast on cpu
-      - AAA_FASTER_WHISPER_DEVICE=cpu # Defaults to cpu. Set to cuda to run faster-whisper on a GPU.
-      - AAA_FALKORDB_HOST=falkordb # Defaults to "host.docker.internal". Must match the container name in `docker-compose.yml` if using a separate FalkorDB instance.
-      - AAA_FALKORDB_PORT=6379 # Overrides default port of 44400. Only required if connecting to an external FalkorDB instance on non-default ports.
-      - AAA_FALKORDB_PASSWORD=${AAA_FALKORDB_PASSWORD:-default} # Defaults to "default" if not set
-      # - AAA_LOCAL_AAA_PORT=44444 # defaults to 44444
-      - AAA_IDENTITY_SOURCE=integrated-idp # default is ariadne-anyverse, for local setup it should be integrated-idp.
-      - AAA_WORKER_PROCESSES=2 # Overrides default of 4 workers. Each worker uses around **4GB of RAM**.
-    networks:
-      - ariadne-network
-
-  ariadne-webapp:
-    image: ariadneindustries/ariadne-webapp:0.2.0-web-bff
-    restart: unless-stopped
-    ports:
-      - "43380:80"   # HTTP port for accessing the webapp
-      - "44380:443"  # HTTPS port (optional, not properly supported, please use a Proxy server if you need TLS)
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    environment:
-      - AAA_ENDPOINT_URL=http://host.docker.internal:44444/endpoint # can be set to the Ariadne Engine container, server ip address, or host. An Ariadne Engine must run there.
-      - IDP_BASE_URL=http://host.docker.internal:44444/integrated_idp # should be the Identity Provider used by the Ariadne Engine instance. Can be the integrated IDP of the Ariadne Engine if enabled
-    networks:
-      - ariadne-network
-```
-
-See `docker-compose-example.yml` in this repository for a full setup including local model servers and FalkorDB.
-
-### Environment Variables
-
-#### Docker Deployment
-
-Create a `.env` file with the following variables (adjust as needed):
+Create a `.env` file alongside your `docker-compose.yml`:
 
 ```bash
 HOST_UID=1000
 HOST_GID=1000
-AAA_FALKORDB_PASSWORD=default
+AAA_FALKORDB_PASSWORD=default            # Only required if using FalkorDB backend
+AAA_EMBEDDINGS_BASE_URL=http://llama-cpp-embedding-server:8080/v1  # **REQUIRED** for retrieval features
 ```
 
-#### Native Deployment - Automatic Environment Setup
+#### 💻 Native Deployment (Automatic Setup)
 
-The binary launcher automatically sets the following environment variables. You can also set them manually in a `.env` file if needed:
+The Ariadne binary launcher (`ariadne_engine`) automatically injects core variables. You only need to manually override them in a `.env` file if you require custom routing or security settings:
 
-**Core Configuration Variables:**
+**Core Routing & Privacy:**
 ```bash
-MODEL_CONFIG_PATH=./model_config.json
-AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED=true
-AAA_IS_PRIVACY_LEVEL_PREMIUM_ENABLED=true
-AAA_EMBEDDINGS_BASE_URL=http://localhost:44441/v1
-AAA_FASTER_WHISPER_MODEL=small
+AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED=true    # Routes to local models in `model_config.json`
+AAA_EMBEDDINGS_BASE_URL=http://localhost:8080/v1  # Critical: Vector search will fail without this
+AAA_IDENTITY_SOURCE=integrated-idp             # default is "ariadne-anyverse" so you can use your Ariadne Anyverse Account.
 ```
 
-**Advanced Configuration Variables:**
+**Infrastructure & Scaling:**
 ```bash
-# Privacy levels
-AAA_IS_PRIVACY_LEVEL_STANDARD_ENABLED=false
-
-# FalkorDB configuration
-AAA_FALKORDB_HOST=localhost
-AAA_FALKORDB_PORT=6379
-AAA_FALKORDB_PASSWORD=default
-
-# Engine configuration
-AAA_LOCAL_AAA_PORT=44444
-AAA_IDENTITY_SOURCE=integrated-idp
-AAA_WORKER_PROCESSES=2
-
-# faster-whisper configuration
-AAA_FASTER_WHISPER_DEVICE=cpu
+AAA_FALKORDB_HOST=localhost                    # Only needed if AAA_GRAPHITI_BACKEND=falkordb
+AAA_WORKER_PROCESSES=4                         # Each worker uses ~4GB RAM (adjust based on host resources)
+AAA_DEPLOYED_ON_LINUX_PUBLIC_SERVER=0          # Set to 1 to enable ClamAV & sandbox workers for public hosting
 ```
 
-**Variable Descriptions:**
+**Variable Reference Table:**
 
-- `MODEL_CONFIG_PATH`: Path to your `model_config.json` file (auto-set by binary launcher)
-- `AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED`: Enable/disable local models (true/false)
-- `AAA_IS_PRIVACY_LEVEL_PREMIUM_ENABLED`: Enable/disable cloud premium models (true/false)
-- `AAA_IS_PRIVACY_LEVEL_STANDARD_ENABLED`: Enable/disable cloud standard models (true/false)
-- `AAA_EMBEDDINGS_BASE_URL`: URL for the embedding service (auto-configured by launcher)
-- `AAA_FASTER_WHISPER_MODEL`: Speech recognition model (`base`, `small`, `medium`, `large-v3-turbo`)
-- `AAA_FASTER_WHISPER_DEVICE`: Device for speech recognition (`cpu` or `cuda`)
-- `AAA_FALKORDB_HOST`: FalkorDB host address
-- `AAA_FALKORDB_PORT`: FalkorDB port number
-- `AAA_FALKORDB_PASSWORD`: FalkorDB password
-- `AAA_LOCAL_AAA_PORT`: Engine server port
-- `AAA_IDENTITY_SOURCE`: Identity provider (`integrated-idp` or `ariadne-anyverse`)
-- `AAA_WORKER_PROCESSES`: Number of worker processes (each uses ~4GB RAM)
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MODEL_CONFIG_PATH` | (current dir) | Location of the central LLM routing config file |
+| `AAA_EMBEDDINGS_BASE_URL` | - | **Required**. Base URL for your embeddings/retrieval service |
+| `AAA_GRAPHITI_BACKEND` | `kuzu` | Engine: `kuzu` (embedded per-user SQL/Küzu) or `falkordb` (external) |
+| `AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED` | `true` | Enables local/offline model usage via `model_config.json` |
+| `AAA_IS_PRIVACY_LEVEL_PREMIUM_ENABLED` | `false` | Routes to paid cloud LLMs (Mistral/OpenAI/Fireworks) |
+| `AAA_FALKORDB_HOST` / `PORT` / `PASSWORD` | - | External database connection details |
+| `AAA_LOCAL_AAA_PORT` | `44444` | Webapp/API endpoint port |
+| `AAA_IDENTITY_SOURCE` | `ariadne-anyverse` | Auth provider: `integrated-idp` (local) or `ariadne-anyverse` (cloud) |
+| `SEMAPHORE_LIMIT` / `AAA_WORKER_PROCESSES` | `4` / `2-4` | Concurrency limits and Uvicorn worker counts (~4GB RAM per worker) |
 
-> **Note**: The binary launcher automatically sets these variables based on your setup choices. You only need to manually set them if you're using custom configurations or troubleshooting.
+> **Note**: In production environments, variables like `AAA_CLOUD_LLM_ENDPOINT` should be avoided as they force cloud routing overrides that break native startup validation.
 
 ---
 
@@ -763,74 +852,22 @@ flow-scripts/
      - Stores the graph internally for future queries.
    - **Note**: This script is currently complex but fully functional. We're working on simplifying it and improving documentation.
 2. **Simple Knowledge Graph Index Query Flow**
-   - **Purpose**: Query the current state of the knowledge graph indexation of your file index.
-   - This is also a simple showcase on how to build your own flow with Python.
-
-### 📌 How to Use These Flows in the Web App
-
-To utilize these flows in the Ariadne Webapp:
-1. Place the provided `flow-scripts` from the `flow-scripts` folder including the `__init__.py` and the subfolder into your **engine's `flow-scripts/` directory**.
-2. Restart the engine to load the new scripts.
-3. Use the Webapp's **AI File Explorer** and in there the "AI File Index" to start the graph creation with your uploaded files.
 
 ---
 
-## 🖥️ Ariadne Webapp: Your Control Center
+## Verification & Troubleshooting (UI + Backend)
 
-The **Ariadne Webapp** is your dashboard for:
-- Visualizing agentic workflows.
-- Managing knowledge graphs.
-- Interacting with Meta Agents via chat.
-- Creating and managing custom skills.
-
-### 🔗 How It Connects to the Engine
-1. The UI must run **alongside** an `ariadne-engine`. The engine and Webapp can be configured to run on different servers. Multiple Webapps can use one engine.
-2. Set `AAA_ENDPOINT_URL` in the Webapp's `.env` to point to your engine (`http://localhost:44444/endpoint`).
-3. For local setups, ensure `IDP_BASE_URL` points to the engine's integrated IDP:
-   ```bash
-   IDP_BASE_URL=http://host.docker.internal:44444/integrated_idp
-   ```
-
-> **Native deployment note**: For the native binary / companion app flow, backend selection is handled inside the app itself. This README focuses on engine deployment and the Docker-based Webapp configuration.
-
-### Usage Example (Webapp)
-
-Deploy the UI webapp using `docker-compose.yml`. Add the following service to your existing configuration:
-
-```yaml
-services:
-  ariadne-webapp:
-    image: ariadneindustries/ariadne-webapp:0.2.0-web-bff
-    restart: unless-stopped
-    ports:
-      - "43380:80"   # HTTP port for accessing the webapp
-      - "44380:443"  # HTTPS port (optional, not properly supported, please use a Proxy server if you need TLS)
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    environment:
-      - AAA_ENDPOINT_URL=http://host.docker.internal:44444/endpoint # Required. Must point to the active Ariadne Engine backend.
-      - IDP_BASE_URL=http://host.docker.internal:44444/integrated_idp # For local setups, should point to the identity provider used by the engine instance.
-    networks:
-      - ariadne-network
-```
-
-> The `AAA_ENDPOINT_URL` must be set to the same port as your Ariadne Engine backend (`44444`). Ensure that the `IDP_BASE_URL` points to the integrated IDP of the engine when you use the local integrated setup.
-
----
-
-### Verification & Troubleshooting (UI + Backend)
-
-#### 1. **Verify UI Connectivity**
+### 1. Verify UI Connectivity
 
 - Open a browser and navigate to `http://localhost:43380` (or `https://localhost:44380`).
 - Ensure the UI loads correctly and displays data from the engine.
 
-#### 2. **Check for Common Issues**
+### 2. Check for Common Issues
 
 - If the Webapp fails to load, verify that the Ariadne Engine backend is running (`docker ps`) and that environment variables are set correctly.
 - For authentication errors, ensure `IDP_BASE_URL` points to the integrated IDP of the engine (`44444/integrated_idp`).
 
-#### 3. **Verify Backend Connectivity**
+### 3. Verify Backend Connectivity
 
 Check service logs for any errors:
 
@@ -838,29 +875,22 @@ Check service logs for any errors:
 docker logs <container_name>
 ```
 
-#### 4. Verify connectivity to the required ports
+### 4. Verify connectivity to the required ports
 
-- Ariadne Engine: **44444**
+- Ariadne Engine API/Websocket: **44444**
 - LLM GPU Server: **44410** -> Port depends on your setup and how you configured the local models in `model_config.json`. **It is up to you what and how many LLMs you use**
 - LLM CPU Server: **44408** -> Port depends on your setup and how you configured the local models in `model_config.json`. **It is up to you what and how many LLMs you use**
 - VLM Server: **44409**
-- Embeddings Server: **44441**
+- Embeddings Server: **44441** (or custom port, configurable via environment)
 
-#### 5. **Common startup and configuration issues**
+### 5. Common startup and configuration issues
 
 - `model_config.json` is missing or invalid while exclusive local privacy is enabled
-- FalkorDB is not reachable while graph features are being used
+- FalkorDB/Kuzu is not reachable while graph features are being used (`AAA_GRAPHITI_BACKEND` mismatch)
 - `AAA_EMBEDDINGS_BASE_URL` is not set for retrieval and embedding functionality
-- local model server URLs in `model_config.json` do not match the actual ports of your `llama.cpp` or `Ollama` setup
-- required ports are already in use
-
-#### 6. **Missing Configuration Files/Directories**
-
-If any of the following are missing, the engine may fail to start or certain features may remain unavailable:
-- `model_config.json` (required for local exclusive model setups)
-- `mcp_servers.json` (optional, engine can create an empty default if missing)
-- `./flow-scripts/` directory (optional unless you want custom flow scripts)
-- `./skills/` directory (optional unless you want to ship global skills in `v0.2.0+`)
+- Local model server URLs in `model_config.json` do not match the actual ports of your `llama.cpp`, `Ollama`, or external API setup
+- Required ports are already in use
+- Context compaction thresholds (`AAA_CONTEXT_COMPACT_THRESHOLD_TOKENS`) set too low, causing premature history truncation
 
 ---
 
@@ -910,8 +940,8 @@ If the Webapp is part of your stack, it is typically reachable at:
 - In Docker mode, update your compose config or env files and restart the stack
 
 **Update models:**
-- The launcher automatically checks for model updates on startup
-- You can force a re-download by deleting the model files and running setup again
+- The launcher automatically checks for model updates on startup based on `model_catalog.json`
+- You can force a re-download by deleting the model files in `models/others/` and running setup again
 
 **Check logs:**
 - In native mode, logs are written to the console where you started the server
