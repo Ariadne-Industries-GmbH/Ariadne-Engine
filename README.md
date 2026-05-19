@@ -24,7 +24,7 @@ Built by **Ariadne Industries GmbH**, it is the technical backbone of the **[Ari
 ✅ **Subagent Delegation**: The engine can now spawn autonomous subagents that work on isolated tasks, delegate execution traces, and report results back to the master agent \
 ✅ **Shell-like File Tools**: Replaced low-level tools with `fs_read_command`, `fs_write_command`, `edit_file`, and `write_file` for safer, sandbox-aware filesystem access \
 ✅ **AI Notes System**: Lightweight markdown note-taking persisted across sessions — ideal for task logs, temporary plans, and working memory \
-✅ **New Model Routing Architecture**: Replaced hard-coded host setups with a flexible `model_config.json` routing system — use Ollama, llama.cpp, or any OpenAI-compatible API \
+✅ **New Model Routing Architecture**: Replaced hard-coded host setups with a flexible `model_config.json` routing system — use vLLM, Ollama, llama.cpp, or any OpenAI-compatible API \
 ✅ **Kuzu Embedded Graph Support**: Optional embedded Kuzu database as an alternative to FalkorDB for knowledge graphs and LTM, ideal for single-instance deployments \
 ✅ **Reasoning Loops**: Built-in planner/validator pattern with toggleable thinking tokens for complex multi-step tasks \
 ✅ **MCP Session Hardening**: Persistent HTTP and stdio sessions, proper environment handling for MCP servers \
@@ -52,7 +52,7 @@ Most LLM tools require you to manage models, agents, and workflows manually. The
 ✅ **Full control**: Deploy on-premises for maximum privacy or use our cloud version (hosted in Germany, GDPR-compliant). \
 ✅ **Optimized for Technological Sovereignty**:
 - **Battle-tested with local LLMs** running on consumer hardware.
-- **No forced cloud dependency**: Works with open-source models (Ollama, llama.cpp) and avoids vendor lock-in.
+- **No forced cloud dependency**: Works with open-source models (vLLM, Ollama, llama.cpp) and avoids vendor lock-in.
 - **Local, file-based storage system** for maximum portability
 - **CPU-friendly for specific workflows**: use the scripting engine to build special data flows with multimodal AI models.
 
@@ -392,46 +392,82 @@ This file tells the engine which models to use, how to connect to them, and wher
 - **Docker / local exclusive privacy**: In practice, you usually provide it manually
 - **Cloud-only setups**: Local model entries are not needed if you do not use exclusive local privacy
 
-#### Example (Qwen3.6 MoE + Gemma 4e4b)
+#### Example (vLLM + llama.cpp — Mixed Local Setup)
+
+This example shows a realistic setup with multiple providers (vLLM for high-throughput serving, llama.cpp for resource-efficient inference), reasoning-enabled models, and context thresholds:
 
 ```json
 {
-  "gemma-4-e4b": {
-    "url": "http://localhost:44410/v1",
+  "gemma-4-26b-a4b-thinking": {
+    "url": "http://192.168.178.93:44410/v1",
+    "provider": "vllm",
+    "proxy_family": "gemma4",
+    "reasoning_effort": "medium",
+    "temperature": 1.0,
+    "alias": "gemma-4-26b-a4b-it",
+    "input_modalities": ["text", "image"],
+    "output_modalities": ["text"],
+    "compaction_threshold": 220000,
+    "pruning_threshold": 200000
+  },
+  "gemma-4-26b-a4b-it": {
+    "url": "http://192.168.178.93:44410/v1",
+    "provider": "vllm",
+    "proxy_family": "gemma4",
+    "reasoning_effort": "none",
+    "temperature": 1.0,
+    "alias": "gemma-4-26b-a4b-it",
+    "input_modalities": ["text", "image"],
+    "output_modalities": ["text"],
+    "compaction_threshold": 220000,
+    "pruning_threshold": 200000
+  },
+  "gemma4-e4b-llamacpp": {
+    "url": "http://localhost:44411/v1",
     "provider": "llama.cpp",
     "proxy_family": "gemma4",
     "privacy_level": "Exclusive",
-    "temperature": 0.7,
-    "input_modalities": ["text"],
-    "output_modalities": ["text"]
-  },
-  "qwen3-6-35b-a3b": {
-    "url": "http://localhost:44410/v1",
-    "provider": "llama.cpp",
-    "proxy_family": "qwen3_6",
-    "privacy_level": "Exclusive",
-    "temperature": 1.0,
     "reasoning_effort": "none",
+    "temperature": 1.0,
+    "compaction_threshold": 55000,
+    "pruning_threshold": 50000,
     "input_modalities": ["text", "image"],
     "output_modalities": ["text"]
   },
-  "ministral-3-8b": {
+  "gemma4-e4b-llamacpp-th": {
     "url": "http://localhost:44411/v1",
     "provider": "llama.cpp",
-    "proxy_family": "ministral3",
+    "proxy_family": "gemma4",
     "privacy_level": "Exclusive",
-    "temperature": 0.2,
+    "reasoning_effort": "high",
+    "temperature": 1.0,
+    "compaction_threshold": 55000,
+    "pruning_threshold": 50000,
     "input_modalities": ["text", "image"],
     "output_modalities": ["text"]
   },
-  "qwen3-6-27b-q4": {
-    "url": "http://localhost:44410/v1",
+  "qwen3-5-9b-llamacpp": {
+    "url": "http://localhost:44412/v1",
     "provider": "llama.cpp",
     "proxy_family": "qwen3_5",
     "privacy_level": "Exclusive",
-    "temperature": 0.6,
     "reasoning_effort": "none",
-    "input_modalities": ["text"],
+    "temperature": 0.2,
+    "compaction_threshold": 55000,
+    "pruning_threshold": 50000,
+    "input_modalities": ["text", "image"],
+    "output_modalities": ["text"]
+  },
+  "qwen3-5-9b-llamacpp-th": {
+    "url": "http://localhost:44412/v1",
+    "provider": "llama.cpp",
+    "proxy_family": "qwen3_5",
+    "privacy_level": "Exclusive",
+    "reasoning_effort": "high",
+    "temperature": 0.6,
+    "compaction_threshold": 55000,
+    "pruning_threshold": 50000,
+    "input_modalities": ["text", "image"],
     "output_modalities": ["text"]
   }
 }
@@ -457,6 +493,37 @@ This file tells the engine which models to use, how to connect to them, and wher
 | `qwen_moe_dual_gpu` | 2 GPUs with similar VRAM | Qwen3.6 35B A3B Q4 | 262K tokens |
 
 > **Note**: If you use manual mode during setup, you must provide `model_config.json` yourself. The launcher will not auto-generate it.
+
+#### Request Routing Queues: `__queues__`
+
+The `__queues__` key defines **per-provider request routing queues** in `model_config.json`. For each backend URL (provider + endpoint combination) you declare here, the engine maintains an internal request queue that buffers excess requests when no free slot is available. This prevents overload and ensures stable inference performance.
+
+```json
+{
+  "__queues__": [
+    {
+      "provider": "vllm",
+      "url": "http://192.168.178.93:44410/v1",
+      "max_parallel": 4
+    },
+    {
+      "provider": "llama.cpp",
+      "url": "http://localhost:44411/v1",
+      "max_parallel": 2
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `provider` | `string` | Backend provider identifier (`"vllm"` or `"llama.cpp"`). Must match a `provider` value in your model entries. |
+| `url` | `string` | Full API endpoint URL for the backend server (including `/v1` suffix for OpenAI-compatible APIs). Each unique provider + URL combination gets its own request queue. |
+| `max_parallel` | `integer` | Maximum concurrent requests allowed per queue (`≥ 1`). Excess requests are buffered internally until a slot frees up. |
+
+**Why this matters:** In local setups, memory is typically limited. A llama.cpp server is started with a fixed number of context slots (e.g., `--parallel 2`), so `max_parallel: 2` matches the actual capacity — sending more concurrent requests would cause queue overflow and degraded latency. For vLLM, `max_parallel` acts as a circuit-breaker on the engine side, preventing the server from being flooded with requests beyond what it can realistically process (even though vLLM maintains its own internal buffer). Setting `max_parallel` correctly ensures each provider receives only the throughput it can handle stably.
+
+> **Note:** The native launcher auto-generates and manages this section during setup. In custom or manual setups, you are responsible for declaring your queues explicitly to match your actual server capacity.
 
 ### `mcp_servers.json` (Optional)
 
