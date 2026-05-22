@@ -225,9 +225,56 @@ Docker is the more explicit and more configurable deployment path. It is the bet
 
 > **Pro Tip**: Use our [`docker-compose-example.yml`](https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine/blob/main/docker-compose-example.yml) as the main reference for a full backend + frontend setup, and [`docker-compose-llms.yml`](https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine/blob/main/docker-compose-llms.yml) for additional local `llama.cpp` server examples.
 
-**Example Docker Compose Configuration**
+### Why We Use Long-Format Bind Mounts
 
-This example uses the **Long format Volumes** pattern to prevent the Docker daemon from auto-creating host directories, and sets up the engine with local model servers (Gemma 4e4b + Qwen3.6 MoE):
+> **Strong Recommendation:** Always use **Long-form volume mounts** (`type: bind`) with `create_host_path: false` for all your bind-mount volumes in Docker Compose. This is not just a preference — it prevents a common and frustrating permission issue.
+
+#### The Problem with Short-Format Mounts
+
+When you use the short-form mount syntax (e.g., `./databases:/container/path`) and the target directory **does not exist on the host**, Docker's daemon will automatically create it for you. Here's the catch: **Docker creates these directories as `root:root` with permissions `0755`.**
+
+This causes permission conflicts because:
+- Your container runs with a non-root user (the Ariadne Engine uses UID/GID 1000 by default, or your `HOST_UID`/`HOST_GID`)
+- This user cannot write to directories owned by `root:root`
+- You end up with errors like "permission denied" when the engine tries to create databases, models, or log files
+
+You can work around this by manually `chown`-ing the directories after Docker creates them — but that's error-prone and easily forgotten. If you delete and recreate the directory, you're back at square one.
+
+#### The Solution: Long-Format + `create_host_path: false`
+
+With **Long-form volume syntax** and `create_host_path: false`, Docker refuses to start your container if the host path doesn't already exist:
+
+```yaml
+# Good: Long-form with create_host_path: false
+volumes:
+  - type: bind
+    source: ./databases
+    target: /app/aaa-bundle/databases
+    bind:
+      create_host_path: false  # Docker won't create it for you
+```
+
+This forces **you** to create the directories yourself on the host before starting Docker. Since you're creating them, they will be owned by your user, matching the container's UID/GID and avoiding permission conflicts entirely.
+
+#### Quick Start
+
+1. Create your directories manually:
+   ```bash
+   mkdir -p ./databases ./models/docling ./models/faster-whisper
+   ```
+2. Touch empty files where needed (like JSON config files):
+   ```bash
+   touch ./model_config.json ./mcp_servers.json ./dreaming_runtime_config.json
+   ```
+3. Run `docker compose up`. It will start without permission errors.
+
+This approach guarantees that **all mounted directories and files are created by your host user** with the correct ownership, giving you a clean and predictable deployment from the start.
+
+---
+
+### Example Docker Compose Configuration
+
+This example uses the **Long format Volumes** pattern (see above for why) and sets up the engine with local model servers (Gemma 4e4b + Qwen3.6 MoE):
 
 ```yaml
 networks:
