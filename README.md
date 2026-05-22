@@ -221,6 +221,8 @@ Docker is the more explicit and more configurable deployment path. It is the bet
 - [ ] **16GB RAM minimum** (engine workers use ~4GB each, plus model RAM)
 - [ ] **32GB+ RAM recommended** for full local model support with multiple workers
 
+> **Terminal Sandboxing in Docker:** If you want the agent to execute terminal commands (via `exec_terminal_command`), the engine requires `terminal_runtime_mode: linux_sandbox` with bubblewrap. For Docker deployments, your compose file must include `privileged: true` and `security_opt: [apparmor=unconfined, seccomp=unconfined]`. The AppArmor configuration must also be applied on the **Linux host** running Docker. See the **[Local Automation Policy](#local_automation_policyjson)** section below for detailed setup instructions.
+
 > **Pro Tip**: Use our [`docker-compose-example.yml`](https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine/blob/main/docker-compose-example.yml) as the main reference for a full backend + frontend setup, and [`docker-compose-llms.yml`](https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine/blob/main/docker-compose-llms.yml) for additional local `llama.cpp` server examples.
 
 **Example Docker Compose Configuration**
@@ -734,11 +736,11 @@ Override the config path with `AAA_LOCAL_AUTOMATION_POLICY_CONFIG`. The engine r
 
 **`terminal_runtime_mode` options:**
 - **`disabled`** — No terminal tools available. All terminal-related calls are rejected. The Engine uses simple `fs_read_command` and `fs_write_command`. Highest security, any OS.
-- **`linux_sandbox`** — Shell commands run inside a Bubblewrap sandbox with a restricted filesystem namespace. System paths (`/usr`, `/bin`, etc.) are read-only; only configured roots are mounted with their declared access level. Protected sub-paths (`.git`, `.venv`) are overlaid as read-even-within-writable-roots. Requires Linux with `bubblewrap` installed — falls back to `disabled` if unavailable.
-- **`trusted_host`** — Shell commands execute directly on the host without sandboxing. The engine still validates that `working_directory` is within an allowed root, but system-level protections are absent. Use only in disposable VMs, isolated dev machines, or container environments where host access is already externally bounded.
+- **`linux_sandbox`** — Shell commands run inside a Bubblewrap sandbox (`bwrap`) with a restricted filesystem namespace. System paths (`/usr`, `/bin`, etc.) are read-only; only configured roots are mounted with their declared access level. Protected sub-paths (`.git`, `.venv`) are overlaid as read-even-within-writable-roots. **Requires Linux with `bubblewrap` installed.** Falls back to `disabled` if unavailable or if user namespaces cannot be created.
+- **`trusted_host`** — Shell commands execute directly on the host without sandboxing. The engine still validates that `working_directory` is within an allowed root, but system-level protections are absent. Use only in disposable VMs, isolated dev machines, Windows/macOS (where bubblewrap is unavailable), or container environments where host access is already externally bounded.
 
 **Access Levels:**
-- **`ro`** — Read files only (via `fs_read_command`)
+- **`ro`** — Read files only (via `fs_read_command`). No write or execution allowed.
 - **`rw`** — Read + write via file tools (`edit_file`, `write_file`, `apply_patch`). Shell commands are **not** permitted.
 - **`rwx`** — Full access: read, write via file tools **and** shell execution via `exec_terminal_command`.
 
@@ -746,7 +748,91 @@ Override the config path with `AAA_LOCAL_AUTOMATION_POLICY_CONFIG`. The engine r
 
 Each root can optionally set `"requires_approval": true` to enforce a user confirmation dialog before any tool accesses that directory.
 
-For a comprehensive explanation of sandbox internals, security guarantees, and practical configuration patterns, see [`local_automation_policy.md`](https://github.com/Ariadne-Industries/ariadne-engine/blob/main/local_automation_policy.md) in the [Ariadne Engine source](https://github.com/Ariadne-Industries/ariadne-engine).
+#### Three Deployment Dimensions for Terminal Sandboxing
+
+The Ariadne Engine supports three distinct approaches to terminal command execution, each with different security guarantees and platform requirements:
+
+**1. Native Host Execution (Linux) — `linux_sandbox` + Bubblewrap**
+For native Linux deployments where you want the highest level of process isolation while allowing the agent to execute shell commands, configure `terminal_runtime_mode: linux_sandbox`. This requires:
+- **bubblewrap** installed on the host (`apt install bubblewrap`)
+- AppArmor configured to allow user namespace creation (see below)
+
+This is the recommended approach for single-machine Linux deployments where security matters.
+
+**2. Docker Container Execution — `linux_sandbox` + Bubblewrap inside Docker**
+For containerized deployments, bubblewrap runs *inside* the Ariadne Engine container. The host running Docker still requires AppArmor configuration, and the Docker Compose setup must include specific security settings:
+- `privileged: true` in the service definition
+- `security_opt: [apparmor=unconfined, seccomp=unconfined]`
+
+> **⚠️ Security Note:** When using `privileged: true` in Docker, the container has minimal isolation against the host kernel. This means at the Docker level there is effectively no real isolation between the container and the host. However, bubblewrap still provides process and path isolation *inside* the container — the agent can only access paths explicitly configured as read-only or read-write roots.
+
+**Platform-Specific Setup for Windows Users:**
+
+Native Bubblewrap is **not available on native Windows**. However, you have two fully supported options:
+
+- **WSL2 (Windows Subsystem for Linux 2)** — Run the Ariadne Engine natively inside a WSL2 distribution. Since WSL2 runs a full Linux kernel, bubblewrap works identically to native Linux. You must install `bubblewrap` in your WSL2 distribution and configure AppArmor *inside* the WSL2 environment (see AppArmor configuration below). This is the recommended approach for single-machine Windows deployments.
+
+- **Docker Desktop on Windows** — Docker Desktop runs a WSL2-based VM on modern Windows systems. For bubblewrap to function inside your container:
+  - Configure AppArmor **inside the WSL2 distribution** that powers Docker Desktop (not in Windows itself). Most Docker Desktop installations ship with a pre-configured AppArmor profile that permits user namespaces, so you may not need additional configuration. If your setup restricts this behavior, apply the same bwrap AppArmor profile documented below to the WSL2 backend VM.
+  - Ensure `privileged: true` and `security_opt: [apparmor=unconfined, seccomp=unconfined]` are set in your Docker Compose file (see Docker Compose Sandbox Requirements section).
+
+> **Note:** If you cannot or do not want to configure WSL2/Docker for bubblewrap support, use `trusted_host` mode instead. It works natively on Windows without any special setup.
+
+**3. Trusted Host — `trusted_host` mode**
+This mode works everywhere (Linux, Windows, macOS, any container) without special host configuration:
+- No AppArmor rules needed
+- No bubblewrap installation required
+- No Docker privilege escalation needed
+- The engine validates that `working_directory` falls within configured allowed roots at the path level
+- **No process isolation** — the executed command runs directly on the host with full privileges of the running user
+
+This mode is appropriate when you deploy in an already isolated environment, run on Windows/macOS where bubblewrap is unavailable, or explicitly accept the trust model that the agent executes commands directly.
+
+---
+
+#### Bubblewrap AppArmor Configuration (Linux & WSL2)
+
+When using `terminal_runtime_mode: linux_sandbox`, the host must allow bubblewrap (`bwrap`) to create user namespaces. On Ubuntu/Debian systems, AppArmor restricts this by default. Create a custom AppArmor profile to permit it:
+
+**Create the AppArmor profile:**
+```bash
+sudo nano /etc/apparmor.d/bwrap
+```
+
+**Content of the file:**
+```txt
+abi <abi/4.0>,
+include <tunables/global>
+
+profile bwrap /usr/bin/bwrap flags=(unconfined) {
+  userns,
+  include if exists <local/bwrap>
+}
+```
+
+**Load the profile:**
+```bash
+sudo apparmor_parser -r /etc/apparmor.d/bwrap
+```
+
+For WSL2 (Windows Subsystem for Linux): The same AppArmor configuration applies inside your WSL2 distribution. For Docker deployments: the AppArmor configuration must be applied on the **Linux host** running Docker.
+
+---
+
+#### Docker Compose Sandbox Requirements
+
+When deploying with `docker compose` and using `terminal_runtime_mode: linux_sandbox`, your `docker-compose.yml` must include these settings in the `ariadne-engine` service:
+
+```yaml
+services:
+  ariadne-engine:
+    security_opt:
+      - apparmor=unconfined  # Required for bubblewrap user namespace creation inside the container
+      - seccomp=unconfined   # Required for bubblewrap system calls
+    privileged: true         # Required for bubblewrap — ⚠️ reduces container isolation against host kernel
+```
+
+The v0.3.0 Docker image runs the engine as a dedicated `ariadne` user (UID/GID default 1000:1000). Set `HOST_UID` and `HOST_GID` in your `.env` to match your host user's ID so that bind-mounted files have correct ownership.
 
 ---
 
