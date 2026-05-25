@@ -653,6 +653,71 @@ We follow closely the Claude Desktop Config so you can mostly copy the config fo
 }
 ```
 
+#### 🔍 Websearch: Configuring the Ariadne Webresearch MCP Plugin
+
+The native setup bundle ships with a pre-configured `mcp_servers.json` that includes the `ariadne-webresearch-mcp` entry pointing to the **cloud deployment** of the Ariadne Webresearch MCP Server. This provides access to web search and crawling capabilities directly within conversations.
+
+> ⚠️ **Important: The websearch plugin requires a valid `bearer_token`.** Without it, the engine can connect to the MCP server but queries will fail with authentication errors.
+
+The included configuration looks like this by default:
+
+```json
+{
+  "mcpServers": {
+    "ariadne-webresearch-mcp": {
+      "name": "Ariadne Webresearch MCP",
+      "description": "Use MCP tools for web search and webcrawler retrieval with chunk-aware content handling.",
+      "transport": "http",
+      "command": [],
+      "url": "https://webresearch.ariadneanyverse.de/mcp",
+      "bearer_token": "YOUR_GENERATED_API_KEY_HERE",
+      "env": null,
+      "tags": null,
+      "created_at": "2026-02-06"
+    }
+  }
+}
+```
+
+The `bearer_token` field is set to `YOUR_GENERATED_API_KEY_HERE` by default. You must obtain a valid token before websearch will function.
+
+**Obtaining a Bearer Token:**
+
+1. Open the Ariadne Engine App and navigate to **Settings** (click the user icon in the top-right corner).
+2. Scroll to the section **"API Key for Authorising of Agents"**.
+3. Generate a new API key.
+4. Copy the generated key and paste it into the `bearer_token` field of your `mcp_servers.json` for the `ariadne-webresearch-mcp` entry:
+
+```json
+"ariadne-webresearch-mcp": {
+  "url": "https://webresearch.ariadneanyverse.de/mcp",
+  "bearer_token": "YOUR_GENERATED_API_KEY_HERE",
+  ...
+}
+```
+
+**Native Deployment Setup:**
+
+After editing `mcp_servers.json`, restart the engine. The websearch capabilities will be automatically discovered and available as tools. You can verify the setup by asking a question that requires a live websearch. 
+Trigger it in the `default` context by instructing Ariadne to do a websearch for testing.
+
+**Docker Deployment Setup:**
+
+In Docker environments, the `mcp_servers.json` file is managed through volume mounts or environment variables. The websearch MCP plugin must be configured in the same way. Obtain an API key as described above and ensure it's written to the config file within the container's filesystem.
+
+For Docker deployments, you can also provide the configuration via environment variable:
+
+```bash
+# Set the path to your mcp_servers.json (with bearer_token populated)
+AAA_MCP_SERVERS_CONFIG=/config/mcp_servers.json
+```
+
+Make sure the mounted directory containing `mcp_servers.json` is writable and accessible within the container using long-format bind mounts. See the [Docker Deployment](#docker-deployment) section for mount configuration details.
+
+**Verification:**
+
+You can verify that websearch is working by loading the `ariadne-webresearch-mcp` skill and executing a simple search for "Ariadne Anyverse". If the test succeeds (successful response, no authentication error), websearch is available as part of your engine's toolset.
+
 ### `skills/` (Recommended)
 
 The skill system allows you to ship reusable, capability-declared skills alongside your deployment. If the `skills/` directory exists, the engine discovers and loads valid `SKILL.md`-based skills from it. If absent, the engine proceeds without global deployment-scoped skills.
@@ -737,9 +802,24 @@ If omitted, the engine falls back to interval-based dreaming using `AAA_DREAMING
 }
 ```
 
+> **Note**: Full weekday names (`"monday"`, `"tuesday"`) and abbreviated forms (`"mon"`, `"tue"`) are both accepted. The engine normalizes all inputs to 3-letter abbreviations internally.
+
+The native binary launcher ships with a pre-configured `dreaming_runtime_config.json` that schedules nightly dreaming sessions:
+
+```json
+{
+  "weekdays": ["mon", "tue", "wed", "fri", "thu", "sat", "sun"],
+  "times_of_day": ["22:00"],
+  "timezone": "Europe/Berlin",
+  "cooldown_minutes": 720
+}
+```
+
+This default runs dreaming **every night at 22:00** with a cooldown of **720 minutes (12 hours)** — meaning each session will only run once per day unless explicitly triggered. To adjust, simply edit the file and restart the engine.
+
 | Field | Type | Description |
 |-------|------|-------------|
-| `weekdays` | `string[]` | Weekday names (e.g., `"monday"`, `"tuesday"`). Names are normalized to 3-letter abbreviations internally. **Must contain at least one entry.** If omitted, falls back to interval-based mode. |
+| `weekdays` | `string[]` | Weekday names in full (`"monday"`) or abbreviated (`"mon"`). All forms are normalized to 3-letter abbreviations internally. **Must contain at least one entry.** If omitted, falls back to interval-based mode. |
 | `times_of_day` | `string[]` | 24-hour times in `"HH:MM"` format (e.g., `["02:00", "14:30"]`). Duplicates are silently ignored. **Must contain at least one entry.** If omitted, no scheduled runs trigger. |
 | `timezone` | `string` | IANA timezone (e.g., `"Europe/Berlin"`). Determines the clock used for schedule evaluation. Required for scheduling to function. |
 | `cooldown_minutes` | `number` | Minimum minutes between Dreaming runs. Overrides `AAA_DREAMING_RUN_COOLDOWN_SECONDS`. Default: `720` (12 hours) via ENV. |

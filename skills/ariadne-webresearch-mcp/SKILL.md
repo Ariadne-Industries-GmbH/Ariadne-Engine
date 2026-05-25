@@ -1,6 +1,7 @@
 ---
 name: ariadne-webresearch-mcp
 description: Search, scrape, crawl, and page through the web and the internet.
+tags: [websuche, internetsuche, web-scraping, crawlen, recherche]
 tools:
   - mcp:ariadne-webresearch-mcp:search
   - mcp:ariadne-webresearch-mcp:scrape
@@ -9,7 +10,8 @@ tools:
   - mcp:ariadne-webresearch-mcp:crawl_sitemap
   - mcp:ariadne-webresearch-mcp:get_stored_content
   - mcp:ariadne-webresearch-mcp:health
-mcps: [ariadne-webresearch-mcp]
+mcps:
+  - ariadne-webresearch-mcp
 ---
 
 # Goal
@@ -21,15 +23,15 @@ Use the Ariadne webresearch MCP for focused web retrieval. Start narrow, retriev
 - You need to retrieve large crawl or scrape results in chunks.
 
 ## Workflow
-1. Start with `search` to find candidate URLs.
-2. Use `scrape` for one page or a small set of pages.
-3. Use `crawl`, `crawl_site`, or `crawl_sitemap` only when link-following or broad site coverage is required.
-4. If a response includes `content_uuid`, `content_stored=true`, or `next_offset`, continue with `get_stored_content`.
+1. Start with `search_ariadne-webresearch-mcp` to find candidate URLs.
+2. Use `scrape_ariadne-webresearch-mcp` for one page or a small set of pages.
+3. Use `crawl_ariadne-webresearch-mcp`, `crawl_site_ariadne-webresearch-mcp`, or `crawl_sitemap_ariadne-webresearch-mcp` only when link-following or broad site coverage is required.
+4. If a response includes `content_uuid`, `content_stored=true`, or `next_offset`, continue with `get_stored_content_ariadne-webresearch-mcp`.
 5. Stop when `next_offset` is `null` or you already have enough evidence for the user task.
 
 ## Chunk Handling
 - Large responses may be stored locally and returned in parts.
-- Use `get_stored_content(content_uuid, offset, limit)` to page through stored content.
+- Use `get_stored_content_ariadne-webresearch-mcp(content_uuid, offset, limit)` to page through stored content.
 - Read `notes` for retrieval guidance, but stop early if the task is already solved.
 
 ## Safety Rules

@@ -1,8 +1,8 @@
 ---
 name: job-scheduler
 description: Create, inspect, update, and remove scheduled jobs with date, interval, or cron triggers.
+tags: [job-planung, zeitplan, aufgabenscheduler, automatisierung]
 tools: [create_scheduled_job, get_all_scheduled_jobs, update_scheduled_job, remove_job]
-tags: [scheduling, automation, jobs]
 ---
 
 # Goal
