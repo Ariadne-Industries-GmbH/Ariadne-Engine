@@ -1,8 +1,8 @@
 ---
 name: search-embedding-index
 description: Search embedding collections semantically with clear queries and iterative refinement.
+tags: [vektorsuche, semantische-suche, embedding-suche, index-suche]
 tools: [search_in_embedding_collections]
-tags: [search, embeddings, knowledge, documents, vector]
 ---
 
 # Goal
