@@ -333,7 +333,7 @@ services:
       - ariadne-network
 
   ariadne-engine:
-    image: ariadneindustries/ariadne-engine:0.3.0-on-prem
+    image: ariadneindustries/ariadne-engine:0.3.1-on-prem
     restart: unless-stopped
     ports:
       - "44444:44444"
@@ -408,7 +408,7 @@ services:
       - ariadne-network
 
   ariadne-webapp:
-    image: ariadneindustries/ariadne-webapp:0.3.0-web-bff
+    image: ariadneindustries/ariadne-webapp:0.3.1-web-bff
     restart: unless-stopped
     ports:
       - "43380:80"
