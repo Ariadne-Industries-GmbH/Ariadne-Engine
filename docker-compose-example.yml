@@ -5,7 +5,7 @@ networks:
 
 services:
   ariadne-engine:
-    image: ariadneindustries/ariadne-engine:0.3.1-on-prem
+    image: ariadneindustries/ariadne-engine:1.0.0-on-prem
     restart: unless-stopped
     ports:
       - "44444:44444"
@@ -112,7 +112,7 @@ services:
       - AAA_FALKORDB_HOST=falkordb # Used only when AAA_GRAPHITI_BACKEND=falkordb. Must match the FalkorDB service name or external host.
       - AAA_FALKORDB_PORT=6379 # Used only when AAA_GRAPHITI_BACKEND=falkordb.
       - AAA_FALKORDB_PASSWORD=${AAA_FALKORDB_PASSWORD:-default} # Used only when AAA_GRAPHITI_BACKEND=falkordb.
-      - AAA_GRAPHITI_BACKEND=falkordb # Set to `kuzu` to use embedded per-user Graphiti databases in ./databases/<identity_key>/graphiti.kuzu instead of FalkorDB.
+      - AAA_GRAPHITI_BACKEND=falkordb # Set to `ladybug` to use the embedded per-user Ladybug graph core in ./databases/<identity_key> instead of FalkorDB. (Legacy value `kuzu` selects the embedded backend and migrates existing Kuzu data automatically.)
       - AAA_DREAMING_RUNTIME_STARTUP_DELAY_SECONDS=120 # Example env fallback if no dreaming_runtime_config.json is mounted.
       - AAA_DREAMING_RUNTIME_INTERVAL_SECONDS=600 # Example env fallback if no dreaming_runtime_config.json is mounted.
       - AAA_DREAMING_RUN_COOLDOWN_SECONDS=500 # Example env fallback if no dreaming_runtime_config.json is mounted.
@@ -128,7 +128,7 @@ services:
       - ariadne-network
 
   ariadne-webapp:
-    image: ariadneindustries/ariadne-webapp:0.3.1-web-bff
+    image: ariadneindustries/ariadne-webapp:1.0.0-web-bff
     restart: unless-stopped
     ports:
       - "43380:80"
@@ -166,7 +166,7 @@ services:
     networks:
       - ariadne-network
 
-  falkordb: # Needed only when AAA_GRAPHITI_BACKEND=falkordb. Can be removed when using AAA_GRAPHITI_BACKEND=kuzu.
+  falkordb: # Needed only when AAA_GRAPHITI_BACKEND=falkordb. Can be removed when using AAA_GRAPHITI_BACKEND=ladybug.
     image: falkordb/falkordb:latest
     restart: unless-stopped
     ports:

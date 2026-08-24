@@ -12,22 +12,24 @@ Built by **Ariadne Industries GmbH**, it is the technical backbone of the **[Ari
 
 ---
 
-## 🚀 Release v0.3.0: Autonomous Agents, Dreaming & Embedded Knowledge Graphs
+## 🚀 Release v1.0.0: Workspaces, Knowledge Graph Creation & the New Embedded Graph Core
 
-### What's New Since v0.2.0?
+### What's New Since v0.3.1?
 
-🔥 The Ariadne Engine has evolved significantly with **v0.3.0**, introducing a fully reworked agent runtime, embedded memory systems, and a new model routing architecture:
+🔥 **v1.0.0** is the first general-availability release of the Ariadne Engine. It adds workspace file management, guided knowledge graph creation, easy-to-use chats, the new embedded Ladybug graph core, a standalone speech-recognition service, and a hardened single-process deployment:
 
-✅ **Dreaming Runtimes**: Autonomous background thinking — schedule cron-like periods where the engine silently processes your data, refines memories, and prepares insights without user interaction \
-✅ **Embedded Long-Term Memory (LTM)**: Built-in episode creation, cache sync, and structured fact storage with Kuzu graph integration or FalkorDB support \
-✅ **Context Pruning & Compacting**: Token-based context management — automatically prunes tool outputs below a threshold and compactes older conversation history into summaries to control token costs \
-✅ **Subagent Delegation**: The engine can now spawn autonomous subagents that work on isolated tasks, delegate execution traces, and report results back to the master agent \
-✅ **Shell-like File Tools**: Replaced low-level tools with `fs_read_command`, `fs_write_command`, `edit_file`, and `write_file` for safer, sandbox-aware filesystem access \
-✅ **AI Notes System**: Lightweight markdown note-taking persisted across sessions — ideal for task logs, temporary plans, and working memory \
-✅ **New Model Routing Architecture**: Replaced hard-coded host setups with a flexible `model_config.json` routing system — use vLLM, Ollama, llama.cpp, or any OpenAI-compatible API \
-✅ **Kuzu Embedded Graph Support**: Optional embedded Kuzu database as an alternative to FalkorDB for knowledge graphs and LTM, ideal for single-instance deployments \
-✅ **Reasoning Loops**: Built-in planner/validator pattern with toggleable thinking tokens for complex multi-step tasks \
-✅ **MCP Session Hardening**: Persistent HTTP and stdio sessions, proper environment handling for MCP servers \
+✅ **Workspaces & File Explorer**: Browse, upload, and download the files of an AI workspace in the new workspace explorer, with per-user access policies and upload size/extension controls \
+✅ **Knowledge Graph Creation**: Guided creation of long-term-memory knowledge graphs from your workspace files, processed by isolated per-item subagents, with custom Graphiti instructions per dataspace \
+✅ **Alpha Chats**: A new lightweight chat type for quick, exploratory conversations, plus reworked context wizards \
+✅ **Chat Copy, Move & Split**: Reorganize chats, split long threads at any message, and search messages with an improved chat-message search tool \
+✅ **Manual Compaction**: Compact a chat history manually at any time with streamed compaction feedback, backed by a context-size evaluation endpoint and ghost-prompt rescue for duplicated tool calls \
+✅ **Ladybug Embedded Graph Core**: The embedded knowledge-graph database is now Ladybug (v0.19). Existing Kuzu databases are **automatically migrated** on the first start after an upgrade, with backups and WAL-corruption recovery \
+✅ **Standalone Whisper Service**: Speech recognition now runs as a separate background service (`integrated` or `external` mode) with model downloads completed before server start \
+✅ **Per-User Automation Policies**: Each user manages their own filesystem roots and MCP registrations from the app, with optional policy templates for new users \
+✅ **Reworked Terminal Tooling**: `exec_terminal_command` supports long-running background processes with a process supervisor, and `edit_file` uses precise, line-anchored editing \
+✅ **Model Routing & Reasoning Contracts**: Centralized premium-model definitions and a background-task model hierarchy with explicit fallback rules \
+✅ **Worker Health Checks & Diagnostics**: Hung-worker detection with configurable timeouts (`AAA_WORKER_HEALTHCHECK_*`) and structured worker exit reports \
+✅ **Improved Document Processing**: Images are extracted from documents including tables, indexed documents can export markdown resources, and MCP image responses are handled as file downloads
 
 > **Stay tuned!** Follow our [GitHub](https://github.com/Ariadne-Industries-GmbH) or [LinkedIn](https://linkedin.com/company/ariadne-industries) for updates.
 
@@ -48,7 +50,7 @@ The Ariadne Engine is tailored for:
 Most LLM tools require you to manage models, agents, and workflows manually. The Ariadne Engine **handles the complexity for you**:
 
 ✅ **Agentic automation**: Internal agents interact with LLMs, VLMs, Speech Recognition and embeddings — **you define the workflows, not the infrastructure**. \
-✅ **Knowledge graphs**: Your data becomes a **connected intelligence layer**, enabling long-term reasoning across documents, APIs, and internal systems. *(Powered by FalkorDB or embedded Kuzu)* \
+✅ **Knowledge graphs**: Your data becomes a **connected intelligence layer**, enabling long-term reasoning across documents, APIs, and internal systems. *(Powered by FalkorDB or the embedded Ladybug graph core)* \
 ✅ **Full control**: Deploy on-premises for maximum privacy or use our cloud version (hosted in Germany, GDPR-compliant). \
 ✅ **Optimized for Technological Sovereignty**:
 - **Battle-tested with local LLMs** running on consumer hardware.
@@ -65,12 +67,13 @@ Most LLM tools require you to manage models, agents, and workflows manually. The
 | Feature               | Description                                                                 |
 |-----------------------|-----------------------------------------------------------------------------|
 | **Skill-Based Agents** | Modular skill system with dynamic loading, MCP integration, and tool-aware filtering. Define custom skills and compose them for complex workflows. |
-| **Knowledge Graphs & LTM** | Structured fact storage powered by FalkorDB or embedded Kuzu. Long-term memory with cache syncing, chunking, and episode management. *(No raw storage -> connected insights.)* |
+| **Knowledge Graphs & LTM** | Structured fact storage powered by FalkorDB or the embedded Ladybug graph core, with guided knowledge-graph creation from your files. Long-term memory with cache syncing, chunking, and episode management. *(No raw storage -> connected insights.)* |
 | **Autonomous Subagents** | Spawn isolated background agents that work on delegated tasks, return execution traces, and scale your automation without blocking the main thread. |
 | **Dreaming Runtimes** | Schedule silent background thinking periods. The engine autonomously processes memories, refines context, and surfaces insights while you sleep. |
 | **Modular AI Integration** | Supports LLMs, VLMs, and embeddings via flexible model routing (`model_config.json`). Works with vLLM, llama.cpp, Ollama, or cloud providers. Configure once, use flexibly. Optimized for Gemma 4, Qwen3.x and Mistral LLMs. |
 | **Privacy by Design**  | Local-only processing or cloud privacy tiers — your choice. Hosted in Germany for compliance. |
 | **Job Scheduling & Automation** | Time-based triggers, notifications, and autonomous background processes with cron-like scheduling. |
+| **Workspaces & File Management** | Browse, upload, and download files per context in the workspace explorer. Per-user access policies and upload size/extension controls included. |
 
 ---
 
@@ -80,7 +83,7 @@ Most LLM tools require you to manage models, agents, and workflows manually. The
 
 The Ariadne Engine comes with:
 1. **Pre-configured skill-based workflows**: Start automating tasks with built-in skills like document processing, context retrieval, and job scheduling.
-2. **Knowledge graph infrastructure**: FalkorDB-powered or embedded Kuzu storage for your data as a connected intelligence layer.
+2. **Knowledge graph infrastructure**: FalkorDB-powered or embedded Ladybug storage for your data as a connected intelligence layer.
 3. **Meta Agents & Subagents**: Autonomous agents that interact with your data, models, and external systems on your behalf — including isolated background workers.
 4. **Dreaming Runtimes**: Scheduled background thinking periods where the engine autonomously processes memories and prepares insights.
 5. **Embedded LTM & Context Management**: Token-aware pruning and compaction to keep conversations focused and cost-effective.
@@ -108,7 +111,7 @@ The Ariadne Engine offers two deployment methods:
 
 #### 1. Native Binary Deployment (Recommended for most users)
 
-For users who want the fastest path to a working installation, the recommended starting point in `v0.3.0` is the **native Windows / Linux binary**. You can download the release, start the executable, follow the launcher, and let the engine prepare the runtime for you.
+For users who want the fastest path to a working installation, the recommended starting point in `v1.0.0` is the **native Windows / Linux binary**. You can download the release, start the executable, follow the launcher, and let the engine prepare the runtime for you.
 
 **Requirements:**
 - [ ] **Linux** (Ubuntu 24.04+ recommended) or **Windows 10/11**
@@ -221,7 +224,7 @@ Docker is the more explicit and more configurable deployment path. It is the bet
 - [ ] **16GB RAM minimum** (engine workers use ~4GB each, plus model RAM)
 - [ ] **32GB+ RAM recommended** for full local model support with multiple workers
 
-> **Terminal Sandboxing in Docker:** If you want the agent to execute terminal commands (via `exec_terminal_command`), the engine requires `terminal_runtime_mode: linux_sandbox` with bubblewrap. For Docker deployments, your compose file must include `privileged: true` and `security_opt: [apparmor=unconfined, seccomp=unconfined]`. The AppArmor configuration must also be applied on the **Linux host** running Docker. See the **[Local Automation Policy](#local_automation_policyjson)** section below for detailed setup instructions.
+> **Terminal Sandboxing in Docker:** If you want the agent to execute terminal commands (via `exec_terminal_command`), the engine requires `terminal_runtime_mode: bubblewrap`. For Docker deployments, your compose file must include `privileged: true` and `security_opt: [apparmor=unconfined, seccomp=unconfined]`. The AppArmor configuration must also be applied on the **Linux host** running Docker. See the **[Local Automation Policy](#local_automation_policyjson)** section below for detailed setup instructions.
 
 > **Pro Tip**: Use our [`docker-compose-example.yml`](https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine/blob/main/docker-compose-example.yml) as the main reference for a full backend + frontend setup, and [`docker-compose-llms.yml`](https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine/blob/main/docker-compose-llms.yml) for additional local `llama.cpp` server examples.
 
@@ -333,7 +336,7 @@ services:
       - ariadne-network
 
   ariadne-engine:
-    image: ariadneindustries/ariadne-engine:0.3.1-on-prem
+    image: ariadneindustries/ariadne-engine:1.0.0-on-prem
     restart: unless-stopped
     ports:
       - "44444:44444"
@@ -408,7 +411,7 @@ services:
       - ariadne-network
 
   ariadne-webapp:
-    image: ariadneindustries/ariadne-webapp:0.3.1-web-bff
+    image: ariadneindustries/ariadne-webapp:1.0.0-web-bff
     restart: unless-stopped
     ports:
       - "43380:80"
@@ -423,6 +426,26 @@ services:
 ```
 
 See `docker-compose-example.yml` in this repository for a full setup including local model servers and FalkorDB.
+
+---
+
+### 🎤 Linux Desktop: Microphone Setup (Flutter App)
+
+When using the **Ariadne Flutter App** (companion app) on Linux (Ubuntu/Debian), microphone recording requires additional system packages that are not installed automatically.
+
+The app uses the [`record`](https://pub.dev/packages/record) package v6.x for audio capture. Without the following packages, microphone detection and recording will fail on Linux:
+
+```bash
+# PulseAudio CLI tools (parecord, pactl)
+sudo apt install pulseaudio-utils
+
+# Audio encoding
+sudo apt install ffmpeg
+```
+
+**Quick install:** `sudo apt install pulseaudio-utils ffmpeg`
+
+> **Note:** On Ubuntu 24.04+, PipeWire is pre-installed. `pipewire-pulse` provides a PulseAudio compatibility layer, so `parecord` and `pactl` are available as wrappers and work out of the box.
 
 ---
 
@@ -773,14 +796,14 @@ This is important historically:
 - in the current implementation, missing flow-script directories are tolerated and created when needed
 - custom flows themselves are still optional
 
-So the correct practical interpretation for `v0.3.0` is:
+So the correct practical interpretation for the current release is:
 - **custom flows are optional**
 - the engine can handle a missing `flow-scripts/` directory
 - if you want custom workflows, this is the place to put them
 
 ---
 
-### ✨ New v0.3.0 Configuration Files
+### ✨ Configuration Files
 
 #### `dreaming_runtime_config.json`
 
@@ -848,7 +871,7 @@ Override the config path with `AAA_LOCAL_AUTOMATION_POLICY_CONFIG`. The engine r
       "access": "ro"
     }
   ],
-  "terminal_runtime_mode": "linux_sandbox",
+  "terminal_runtime_mode": "bubblewrap",
   "linux_sandbox": {
     "network_access": true,
     "allow_host_tmp": false,
@@ -863,7 +886,7 @@ Override the config path with `AAA_LOCAL_AUTOMATION_POLICY_CONFIG`. The engine r
 
 **`terminal_runtime_mode` options:**
 - **`disabled`** — No terminal tools available. All terminal-related calls are rejected. The Engine uses simple `fs_read_command` and `fs_write_command`. Highest security, any OS.
-- **`linux_sandbox`** — Shell commands run inside a Bubblewrap sandbox (`bwrap`) with a restricted filesystem namespace. System paths (`/usr`, `/bin`, etc.) are read-only; only configured roots are mounted with their declared access level. Protected sub-paths (`.git`, `.venv`) are overlaid as read-even-within-writable-roots. **Requires Linux with `bubblewrap` installed.** Falls back to `disabled` if unavailable or if user namespaces cannot be created.
+- **`bubblewrap`** — Shell commands run inside a Bubblewrap sandbox (`bwrap`) with a restricted filesystem namespace. System paths (`/usr`, `/bin`, etc.) are read-only; only configured roots are mounted with their declared access level. Protected sub-paths (`.git`, `.venv`) are overlaid as read-only even inside writable roots. **Requires Linux with `bubblewrap` installed.** The legacy persisted value `linux_sandbox` is accepted and automatically migrated to `bubblewrap`.
 - **`trusted_host`** — Shell commands execute directly on the host without sandboxing. The engine still validates that `working_directory` is within an allowed root, but system-level protections are absent. Use only in disposable VMs, isolated dev machines, Windows/macOS (where bubblewrap is unavailable), or container environments where host access is already externally bounded.
 
 **Access Levels:**
@@ -875,18 +898,28 @@ Override the config path with `AAA_LOCAL_AUTOMATION_POLICY_CONFIG`. The engine r
 
 Each root can optionally set `"requires_approval": true` to enforce a user confirmation dialog before any tool accesses that directory.
 
+#### Per-User Policies & Templates
+
+In addition to the global policy, each user may maintain a personal policy at `AAA_STORAGE_BASE_DIR/<identity_key>/local_automation_policy.json`. The user policy only adds `roots` — `terminal_runtime_mode` and sandbox settings always come from the global policy. Effective roots are the union of global roots, user roots, and the automatic standard roots (AI Notes, skills archive, document exports). Where the same path is covered by both policies, the more restrictive access level wins and `requires_approval` flags are combined (logical OR).
+
+Optionally, a **user policy template** (`local_automation_user_policy_template.json`, path overridable via `AAA_LOCAL_AUTOMATION_USER_POLICY_TEMPLATE_CONFIG`) pre-seeds new users: when a user has no personal policy yet, the engine derives one from the template, resolves relative paths to the user's storage directory, and creates the declared directories automatically.
+
+Whether users may change their own policy or MCP registrations from the app/API is controlled exclusively by:
+- `AAA_ALLOW_USER_LOCAL_AUTOMATION_POLICY_MUTATIONS` (`0`/`1`, native default `1`, Docker default `0`): gates `PUT`/`DELETE` on the user's own automation policy
+- `AAA_ALLOW_USER_MCP_REGISTRY_MUTATIONS` (same semantics): gates mutations of the user's own MCP registry
+
 #### Three Deployment Dimensions for Terminal Sandboxing
 
 The Ariadne Engine supports three distinct approaches to terminal command execution, each with different security guarantees and platform requirements:
 
-**1. Native Host Execution (Linux) — `linux_sandbox` + Bubblewrap**
-For native Linux deployments where you want the highest level of process isolation while allowing the agent to execute shell commands, configure `terminal_runtime_mode: linux_sandbox`. This requires:
+**1. Native Host Execution (Linux) — `bubblewrap`**
+For native Linux deployments where you want the highest level of process isolation while allowing the agent to execute shell commands, configure `terminal_runtime_mode: bubblewrap`. This requires:
 - **bubblewrap** installed on the host (`apt install bubblewrap`)
 - AppArmor configured to allow user namespace creation (see below)
 
 This is the recommended approach for single-machine Linux deployments where security matters.
 
-**2. Docker Container Execution — `linux_sandbox` + Bubblewrap inside Docker**
+**2. Docker Container Execution — `bubblewrap` inside Docker**
 For containerized deployments, bubblewrap runs *inside* the Ariadne Engine container. The host running Docker still requires AppArmor configuration, and the Docker Compose setup must include specific security settings:
 - `privileged: true` in the service definition
 - `security_opt: [apparmor=unconfined, seccomp=unconfined]`
@@ -919,7 +952,7 @@ This mode is appropriate when you deploy in an already isolated environment, run
 
 #### Bubblewrap AppArmor Configuration (Linux & WSL2)
 
-When using `terminal_runtime_mode: linux_sandbox`, the host must allow bubblewrap (`bwrap`) to create user namespaces. On Ubuntu/Debian systems, AppArmor restricts this by default. Create a custom AppArmor profile to permit it:
+When using `terminal_runtime_mode: bubblewrap`, the host must allow bubblewrap (`bwrap`) to create user namespaces. On Ubuntu/Debian systems, AppArmor restricts this by default. Create a custom AppArmor profile to permit it:
 
 **Create the AppArmor profile:**
 ```bash
@@ -948,7 +981,7 @@ For WSL2 (Windows Subsystem for Linux): The same AppArmor configuration applies 
 
 #### Docker Compose Sandbox Requirements
 
-When deploying with `docker compose` and using `terminal_runtime_mode: linux_sandbox`, your `docker-compose.yml` must include these settings in the `ariadne-engine` service:
+When deploying with `docker compose` and using `terminal_runtime_mode: bubblewrap`, your `docker-compose.yml` must include these settings in the `ariadne-engine` service:
 
 ```yaml
 services:
@@ -959,7 +992,7 @@ services:
     privileged: true         # Required for bubblewrap — ⚠️ reduces container isolation against host kernel
 ```
 
-The v0.3.0 Docker image runs the engine as a dedicated `ariadne` user (UID/GID default 1000:1000). Set `HOST_UID` and `HOST_GID` in your `.env` to match your host user's ID so that bind-mounted files have correct ownership.
+The v1.0.0 Docker image runs the engine as a dedicated `ariadne` user (UID/GID default 1000:1000). Set `HOST_UID` and `HOST_GID` in your `.env` to match your host user's ID so that bind-mounted files have correct ownership.
 
 ---
 
@@ -978,7 +1011,7 @@ The Ariadne Engine uses different storage layers depending on which features you
 - **How it works**:
 The engine manages these folders automatically. No manual setup is required for normal operation.
 
-### 2. Graph Backends: FalkorDB or Kuzu
+### 2. Graph Backends: FalkorDB or Ladybug (Embedded)
 
 Choose your graph backend via the `AAA_GRAPHITI_BACKEND` environment variable:
 
@@ -990,17 +1023,18 @@ Choose your graph backend via the `AAA_GRAPHITI_BACKEND` environment variable:
   - Graph-oriented connections across documents and structured entities
 - **When to use**: Multi-user deployments, production environments, or when you want graph features independent of the engine container
 
-**Kuzu (Embedded - Recommended for Single-Instance)**
-- **Location**: `./databases/user_*/` (embedded per-user)
+**Ladybug (Embedded - Recommended for Single-Instance)**
+- **Location**: `./databases/user_*/` (embedded per-user, `data.lbug`)
 - **What's stored**: Same as FalkorDB but embedded directly in the user database directory
 - **When to use**: Single-instance deployments, local-only setups, or when you want zero external dependencies
-- Set `AAA_GRAPHITI_BACKEND=kuzu` to enable embedded mode
+- `AAA_GRAPHITI_BACKEND=ladybug` is the default for native deployments (Docker default: `falkordb`)
+- **Upgrading from v0.3.x (Kuzu)**: existing embedded Kuzu databases are **automatically migrated to Ladybug** on the first start after the upgrade. The migration runs before the server starts and keeps a backup of the original data (configurable via `AAA_LADYBUG_MIGRATION_BACKUP_ROOT`). The legacy value `AAA_GRAPHITI_BACKEND=kuzu` is deprecated and now selects the Ladybug backend.
 
 **Important background**
 
 - The engine itself can run **without** a graph backend.
 - If no graph backend is available, the engine still works, but **knowledge graphs and graph-backed long-term memory are unavailable**.
-- In `v0.3.0`, you can freely switch between FalkorDB and Kuzu at runtime via environment variables — no migration required for existing data.
+- In v1.0.0 you choose between FalkorDB and the embedded Ladybug core via environment variables. Upgrading an embedded Kuzu database to Ladybug happens automatically and one-way at startup.
 
 **Recommended FalkorDB service** (for Docker):
 
@@ -1020,22 +1054,39 @@ falkordb:
 
 ---
 
-## 🔧 Configuration (v0.3.0 Update)
+## 🔧 Configuration (v1.0.0 Update)
 
-The 0.3.0 release introduces a highly modular configuration model centered around flexible JSON routing files and environment variables. The previous hard-coded host setups are now replaced by this system.
+The engine uses a highly modular configuration model centered around flexible JSON routing files and environment variables. The hard-coded host setups of the first versions have been fully replaced by this system.
 
 **Essential Environment Variables:**
 - `AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED` (default: `true`): Enables exclusive local model access via `model_config.json`.
 - `AAA_EMBEDDINGS_BASE_URL`: **Required** for embeddings and retrieval features. Set to your embedding server endpoint (e.g., `http://llama-cpp-embedding-server:8080/v1`).
-- `AAA_GRAPHITI_BACKEND`: Choose between `kuzu` (embedded per-user database) or `falkordb` (external graph service). Default for Docker is `falkordb`.
+- `AAA_GRAPHITI_BACKEND`: Choose between `ladybug` (embedded per-user graph core, default for native deployments) and `falkordb` (external graph service, default for Docker). The legacy value `kuzu` is deprecated — it now selects the embedded backend and triggers the automatic one-way Kuzu → Ladybug migration.
 - `MODEL_CONFIG_PATH`: Recommended path to your local model routing configuration.
 
-**New v0.3.0 Context Pruning & Compacting Variables:**
+**Context Pruning & Compacting Variables:**
 - **`AAA_CONTEXT_PRUNE_PROTECT_TOKENS`** (default: `70000`): Token threshold for the Context Pruner. Below this value, no tool outputs or history are trimmed to preserve system stability and core memory.
 - **`AAA_CONTEXT_COMPACT_THRESHOLD_TOKENS`** (default: `90000`): Trigger for "Hard Compaction". When context exceeds this value, older chat history is compressed into a summary to control token costs.
 - **`AAA_CONTEXT_COMPACT_RECENT_USER_BUDGET_TOKENS`** (default: `0`): Token budget for recent user messages within the compacted window. Ensures current user input is protected from aggressive compression.
 - **`AAA_CONTEXT_COMPACT_SUMMARY_MAX_CHARS`** (default: `12000`): Maximum character count for AI-generated summaries of old chat fragments during compaction. Balances context preservation and memory optimization.
 - **`AAA_CONTEXT_PRUNE_PROTECTED_TOOLS`** (default: empty tuple): List of tool names whose outputs are never trimmed or compressed. Critical for system or API responses that must appear exactly as returned.
+
+**New in v1.0.0:**
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AAA_WORKER_HEALTHCHECK_TIMEOUT_SECONDS` | `60` | Seconds before a healthcheck timeout kills a hung worker (min: 1). The default overrides Uvicorn's 5 s to account for embedded Ladybug database opens that may briefly block the event loop. |
+| `AAA_WORKER_HEALTHCHECK_STARTUP_GRACE_SECONDS` | `30` | Seconds after worker start during which healthcheck failures are ignored (prevents premature kills during DB initialization). |
+| `AAA_WORKER_HEALTHCHECK_MAX_CONSECUTIVE_FAILURES` | `2` | Consecutive healthcheck failures before a worker is killed (provides a retry window). |
+| `AAA_WORKER_DIAGNOSTICS_ENABLED` | `1` | Enables structured worker exit & diagnostic reports. |
+| `AAA_WORKER_DIAGNOSTICS_DIRECTORY` | (auto) | Directory for the worker diagnostic reports (must resolve inside `AAA_STORAGE_BASE_DIR`). |
+| `AAA_FASTER_WHISPER_SERVICE_MODE` | `integrated` | `integrated`: the engine starts and manages the faster-whisper service as a separate background process (default). `external`: use an externally managed service. |
+| `AAA_FASTER_WHISPER_BASE_URL` | - | Base URL of an externally managed whisper service (only for `external` mode). |
+| `AAA_FASTER_WHISPER_MODEL_DIR` | - | Override the faster-whisper model download directory. |
+| `AAA_FASTER_WHISPER_SERVICE_WORKERS` | - | Worker count for the integrated whisper service. |
+| `AAA_ALLOW_USER_LOCAL_AUTOMATION_POLICY_MUTATIONS` | native `1` / Docker `0` | Allow users to manage their own local automation policy from the app/API. |
+| `AAA_ALLOW_USER_MCP_REGISTRY_MUTATIONS` | native `1` / Docker `0` | Allow users to manage their own MCP registrations from the app/API. |
+| `AAA_LOCAL_AUTOMATION_USER_POLICY_TEMPLATE_CONFIG` | (auto) | Path to the user policy template used to pre-seed new users' policies. |
 
 ---
 
@@ -1076,7 +1127,7 @@ AAA_DEPLOYED_ON_LINUX_PUBLIC_SERVER=0          # Set to 1 to enable ClamAV & san
 |----------|---------|-------------|
 | `MODEL_CONFIG_PATH` | (current dir) | Location of the central LLM routing config file |
 | `AAA_EMBEDDINGS_BASE_URL` | - | **Required**. Base URL for your embeddings/retrieval service |
-| `AAA_GRAPHITI_BACKEND` | `kuzu` | Engine: `kuzu` (embedded per-user SQL/Küzu) or `falkordb` (external) |
+| `AAA_GRAPHITI_BACKEND` | `ladybug` (native) / `falkordb` (Docker) | Embedded graph core: `ladybug` (embedded per-user database) or `falkordb` (external). Legacy value `kuzu` selects the embedded backend and triggers the one-way Kuzu → Ladybug migration. |
 | `AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED` | `true` | Enables local/offline model usage via `model_config.json` |
 | `AAA_IS_PRIVACY_LEVEL_PREMIUM_ENABLED` | `false` | Routes to paid cloud LLMs (Mistral/OpenAI/Fireworks) |
 | `AAA_FALKORDB_HOST` / `PORT` / `PASSWORD` | - | External database connection details |
@@ -1166,7 +1217,7 @@ docker logs <container_name>
 ### 5. Common startup and configuration issues
 
 - `model_config.json` is missing or invalid while exclusive local privacy is enabled
-- FalkorDB/Kuzu is not reachable while graph features are being used (`AAA_GRAPHITI_BACKEND` mismatch)
+- FalkorDB is not reachable while using `AAA_GRAPHITI_BACKEND=falkordb`, or the embedded Ladybug core cannot open the per-user database (check storage mounts and the worker diagnostic reports)
 - `AAA_EMBEDDINGS_BASE_URL` is not set for retrieval and embedding functionality
 - Local model server URLs in `model_config.json` do not match the actual ports of your `llama.cpp`, `Ollama`, or external API setup
 - Required ports are already in use

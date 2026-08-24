@@ -1,7 +1,8 @@
-# Ariadne Engine - Docker Hub Repository Overview
+# Ariadne Engine — Docker Hub Repository Overview
 
-**Repo Name**: `ariadneindustries/ariadne-engine`  
-**Current Example Tag**: `0.3.1-on-prem`  
+**Repository**: `ariadneindustries/ariadne-engine`  
+**Current Release Tag**: `1.0.0-on-prem`  
+**Related Frontend Image**: `ariadneindustries/ariadne-webapp:1.0.0-web-bff`  
 **GitHub Repository**: https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine
 
 Please use the GitHub repository as the primary reference for deployment details, configuration examples, release assets, and setup guidance.
@@ -16,11 +17,12 @@ It is designed as a **meta-system for data intelligence** that can orchestrate:
 
 - LLMs, VLMs, and embedding models through `model_config.json`
 - autonomous subagents and background "dreaming" runtimes
-- knowledge graph and long-term memory backends
+- knowledge-graph and long-term-memory backends (FalkorDB or the embedded Ladybug core)
+- workspace file management with per-user access policies
 - MCP-based tools, skills, and custom Python flow scripts
-- speech recognition and multimodal processing
+- speech recognition (standalone faster-whisper service) and multimodal processing
 
-Compared to earlier `0.2.0` descriptions, the current `0.3.0` generation adds a reworked agent runtime, flexible model routing, context pruning and compacting, embedded notes, and support for either **FalkorDB** or embedded **Kuzu** graph storage.
+The current `1.0.0` generation builds on the `0.3.x` line and adds the new embedded **Ladybug** graph core (v0.19) with **automatic one-way Kuzu migration**, a **standalone Whisper speech-recognition service** (`AAA_FASTER_WHISPER_SERVICE_MODE`), **workspace file management** support, **per-user local automation policies**, and **hardened worker health checks** with structured diagnostics. The engine itself now runs as a **modular FastAPI monolith**: a single process serves the API, flows, agent runtime, and long-term memory — with fewer moving parts and simplified configuration.
 
 ---
 
@@ -28,9 +30,9 @@ Compared to earlier `0.2.0` descriptions, the current `0.3.0` generation adds a 
 
 The Docker image provides the **engine backend**. A full local deployment may also include:
 
-- `ariadneindustries/ariadne-webapp:0.3.1-web-bff` for the web frontend
+- `ariadneindustries/ariadne-webapp:1.0.0-web-bff` for the web frontend
 - one or more local inference services such as `llama.cpp`, `vLLM`, or Ollama-compatible endpoints
-- optionally `falkordb/falkordb:latest` when using FalkorDB instead of embedded Kuzu
+- optionally `falkordb/falkordb:latest` when using FalkorDB instead of the embedded Ladybug core
 
 For the canonical setup, use [`docker-compose-example.yml`](../docker-compose-example.yml) in this repository.
 
@@ -49,16 +51,19 @@ The engine supports flexible model routing via `model_config.json`. Current repo
 Typical Docker setups include:
 
 1. **Inference endpoints**  
-At least one configured model endpoint for exclusive/local model usage. Any OpenAI-compatible model server can be used if configured correctly in `model_config.json`.
+   At least one configured model endpoint for exclusive/local model usage. Any OpenAI-compatible model server can be used if configured correctly in `model_config.json`.
 
 2. **Embeddings endpoint**  
-`AAA_EMBEDDINGS_BASE_URL` is required for embeddings functionality. The compose example uses a dedicated `llama.cpp` embeddings server.
+   `AAA_EMBEDDINGS_BASE_URL` is required for embeddings functionality. The compose example uses a dedicated `llama.cpp` embeddings server.
 
 3. **Graph backend**  
-Use `AAA_GRAPHITI_BACKEND=falkordb` with a FalkorDB container or external instance, or `AAA_GRAPHITI_BACKEND=kuzu` to use embedded per-user Kuzu databases inside `./databases`.
+   Use `AAA_GRAPHITI_BACKEND=falkordb` with a FalkorDB container or external instance, or `AAA_GRAPHITI_BACKEND=ladybug` to use the embedded per-user Ladybug databases inside `./databases`. The legacy value `kuzu` selects the embedded backend and migrates existing Kuzu databases to Ladybug automatically (one-way, with backup).
 
-4. **Optional frontend**  
-The engine can run standalone, but typical browser-based usage includes the separate Ariadne Webapp container.
+4. **Speech recognition (whisper)**  
+   By default (`AAA_FASTER_WHISPER_SERVICE_MODE=integrated`), the engine starts the faster-whisper service itself as a background service. Set `AAA_FASTER_WHISPER_SERVICE_MODE=external` and `AAA_FASTER_WHISPER_BASE_URL` to use an externally managed service instead.
+
+5. **Optional frontend**  
+   The engine can run standalone, but typical browser-based usage includes the separate Ariadne Webapp container.
 
 ---
 
@@ -106,7 +111,7 @@ For terminal sandboxing and local command execution inside Docker, the compose e
 - `security_opt` including `apparmor=unconfined`
 - `security_opt` including `seccomp=unconfined`
 
-These settings are specifically relevant when using the engine's sandboxed terminal tooling.
+These settings are specifically relevant when using the engine's sandboxed terminal tooling (bubblewrap inside the container).
 
 ---
 
@@ -115,7 +120,7 @@ These settings are specifically relevant when using the engine's sandboxed termi
 ```yaml
 services:
   ariadne-engine:
-    image: ariadneindustries/ariadne-engine:0.3.1-on-prem
+    image: ariadneindustries/ariadne-engine:1.0.0-on-prem
     restart: unless-stopped
     ports:
       - "44444:44444"
@@ -176,17 +181,20 @@ Common variables from the current example:
 
 - `AAA_IDENTITY_SOURCE=integrated-idp`
 - `AAA_EMBEDDINGS_BASE_URL=...`
-- `AAA_GRAPHITI_BACKEND=falkordb|kuzu`
+- `AAA_GRAPHITI_BACKEND=ladybug|falkordb`
 - `AAA_FALKORDB_HOST`, `AAA_FALKORDB_PORT`, `AAA_FALKORDB_PASSWORD`
 - `AAA_FASTER_WHISPER_MODEL`
 - `AAA_FASTER_WHISPER_DEVICE`
+- `AAA_FASTER_WHISPER_SERVICE_MODE` (`integrated` default / `external` with `AAA_FASTER_WHISPER_BASE_URL`)
 - `AAA_WORKER_PROCESSES`
 - `AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED`
 - `AAA_IS_PRIVACY_LEVEL_PREMIUM_ENABLED`
 - `AAA_IS_PRIVACY_LEVEL_STANDARD_ENABLED`
+- `AAA_WORKER_HEALTHCHECK_TIMEOUT_SECONDS` (default `60`), `AAA_WORKER_HEALTHCHECK_STARTUP_GRACE_SECONDS` (default `30`), `AAA_WORKER_HEALTHCHECK_MAX_CONSECUTIVE_FAILURES` (default `2`)
+- `AAA_ALLOW_USER_LOCAL_AUTOMATION_POLICY_MUTATIONS`, `AAA_ALLOW_USER_MCP_REGISTRY_MUTATIONS`
 - optional cloud/provider keys such as `AAA_OPENAI_API_KEY`, `AAA_MISTRAL_PLATFORM_API_KEY`, or `AAA_FIREWORKS_API_KEY`
 
-Additional optional runtime settings shown in the repository include dreaming runtime configuration via either mounted JSON config or environment-variable fallbacks.
+Additional optional runtime settings shown in the repository include dreaming runtime configuration via either mounted JSON config or environment-variable fallbacks, and Ladybug embedded-database tuning variables (`AAA_LADYBUG_*`).
 
 ---
 
@@ -194,10 +202,10 @@ Additional optional runtime settings shown in the repository include dreaming ru
 
 - **Maintained by**: Ariadne Industries GmbH
 - **Repository role**: Public setup, configuration, documentation, and release-assets repository for the Ariadne Engine
-- **Current public Docker example**: `ariadneindustries/ariadne-engine:0.3.1-on-prem`
-- **Related frontend image**: `ariadneindustries/ariadne-webapp:0.3.1-web-bff`
+- **Current public Docker example**: `ariadneindustries/ariadne-engine:1.0.0-on-prem`
+- **Related frontend image**: `ariadneindustries/ariadne-webapp:1.0.0-web-bff`
 
-Versioning shown in this repository currently reflects the `0.3.1` release line rather than the older `0.2.0` or `0.3.0` examples.
+Versioning shown in this repository currently reflects the `1.0.0` release line (previous: `0.3.1`).
 
 ---
 
