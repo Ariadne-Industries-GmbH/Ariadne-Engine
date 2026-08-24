@@ -16,7 +16,7 @@ Built by **Ariadne Industries GmbH**, it is the technical backbone of the **[Ari
 
 ### What's New Since v0.3.1?
 
-🔥 **v1.0.0** is the first general-availability release of the Ariadne Engine. It adds workspace file management, guided knowledge graph creation, easy-to-use chats, the new embedded Ladybug graph core, a standalone speech-recognition service, and a hardened single-process deployment:
+🔥 **v1.0.0** is the first general-availability release of the Ariadne Engine. It adds workspace file management, guided knowledge graph creation, lightweight direct-to-use chats, the new embedded Ladybug graph core, a standalone speech-recognition service, and a hardened single-process deployment:
 
 ✅ **Workspaces & File Explorer**: Browse, upload, and download the files of an AI workspace in the new workspace explorer, with per-user access policies and upload size/extension controls \
 ✅ **Knowledge Graph Creation**: Guided creation of long-term-memory knowledge graphs from your workspace files, processed by isolated per-item subagents, with custom Graphiti instructions per dataspace \
