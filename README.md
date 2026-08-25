@@ -16,7 +16,7 @@ Built by **Ariadne Industries GmbH**, it is the technical backbone of the **[Ari
 
 ### What's New Since v0.3.1?
 
-🔥 **v1.0.0** is the first general-availability release of the Ariadne Engine. It adds workspace file management, guided knowledge graph creation, lightweight direct-to-use chats, the new embedded Ladybug graph core, a standalone speech-recognition service, and a hardened single-process deployment:
+🔥 **v1.0.0** is the first general-availability release of the Ariadne Engine. It adds workspace file management, guided knowledge graph creation, lightweight direct-to-use chats, the new embedded Ladybug graph core, a standalone speech-recognition service, and a hardened monolith deployment, which increases the performance and the security.
 
 ✅ **Workspaces & File Explorer**: Browse, upload, and download the files of an AI workspace in the new workspace explorer, with per-user access policies and upload size/extension controls \
 ✅ **Knowledge Graph Creation**: Guided creation of long-term-memory knowledge graphs from your workspace files, processed by isolated per-item subagents, with custom Graphiti instructions per dataspace \
@@ -464,86 +464,26 @@ This file tells the engine which models to use, how to connect to them, and wher
 - **Docker / local exclusive privacy**: In practice, you usually provide it manually
 - **Cloud-only setups**: Local model entries are not needed if you do not use exclusive local privacy
 
-#### Example (vLLM + llama.cpp — Mixed Local Setup)
+**Per-Model Fields**
 
-This example shows a realistic setup with multiple providers (vLLM for high-throughput serving, llama.cpp for resource-efficient inference), reasoning-enabled models, and context thresholds:
-
-```json
-{
-  "gemma-4-26b-a4b-thinking": {
-    "url": "http://192.168.178.93:44410/v1",
-    "provider": "vllm",
-    "proxy_family": "gemma4",
-    "reasoning_effort": "medium",
-    "temperature": 1.0,
-    "alias": "gemma-4-26b-a4b-it",
-    "input_modalities": ["text", "image"],
-    "output_modalities": ["text"],
-    "compaction_threshold": 220000,
-    "pruning_threshold": 200000
-  },
-  "gemma-4-26b-a4b-it": {
-    "url": "http://192.168.178.93:44410/v1",
-    "provider": "vllm",
-    "proxy_family": "gemma4",
-    "reasoning_effort": "none",
-    "temperature": 1.0,
-    "alias": "gemma-4-26b-a4b-it",
-    "input_modalities": ["text", "image"],
-    "output_modalities": ["text"],
-    "compaction_threshold": 220000,
-    "pruning_threshold": 200000
-  },
-  "gemma4-e4b-llamacpp": {
-    "url": "http://localhost:44411/v1",
-    "provider": "llama.cpp",
-    "proxy_family": "gemma4",
-    "privacy_level": "Exclusive",
-    "reasoning_effort": "none",
-    "temperature": 1.0,
-    "compaction_threshold": 55000,
-    "pruning_threshold": 50000,
-    "input_modalities": ["text", "image"],
-    "output_modalities": ["text"]
-  },
-  "gemma4-e4b-llamacpp-th": {
-    "url": "http://localhost:44411/v1",
-    "provider": "llama.cpp",
-    "proxy_family": "gemma4",
-    "privacy_level": "Exclusive",
-    "reasoning_effort": "high",
-    "temperature": 1.0,
-    "compaction_threshold": 55000,
-    "pruning_threshold": 50000,
-    "input_modalities": ["text", "image"],
-    "output_modalities": ["text"]
-  },
-  "qwen3-5-9b-llamacpp": {
-    "url": "http://localhost:44412/v1",
-    "provider": "llama.cpp",
-    "proxy_family": "qwen3_5",
-    "privacy_level": "Exclusive",
-    "reasoning_effort": "none",
-    "temperature": 0.2,
-    "compaction_threshold": 55000,
-    "pruning_threshold": 50000,
-    "input_modalities": ["text", "image"],
-    "output_modalities": ["text"]
-  },
-  "qwen3-5-9b-llamacpp-th": {
-    "url": "http://localhost:44412/v1",
-    "provider": "llama.cpp",
-    "proxy_family": "qwen3_5",
-    "privacy_level": "Exclusive",
-    "reasoning_effort": "high",
-    "temperature": 0.6,
-    "compaction_threshold": 55000,
-    "pruning_threshold": 50000,
-    "input_modalities": ["text", "image"],
-    "output_modalities": ["text"]
-  }
-}
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| `url` | `string` (required) | OpenAI-compatible base URL of the backend, e.g. `http://localhost:44410/v1`. |
+| `provider` | `string` (required) | Backend provider: `vllm`, `llama.cpp`, `bitnet.cpp`, `ollama`, `fireworks-ai`, `openai`, `mistral-ai`, `eurouter`. |
+| `proxy_family` | `string` | Protocol family for existing configurations: `default`, `mistral`, `ministral3`, `gemma4`, `qwen3_5`, `qwen3_6`, `eurouter`, `eurouter_kimi` (default `default`). New endpoints should prefer the explicit `reasoning` + `message_protocol` blocks instead. |
+| `privacy_level` | `string` | `Exclusive`, `Standard`, or `Premium` (default `Exclusive`). |
+| `temperature` | `number` | Sampling temperature for the model. |
+| `reasoning_effort` | `string` | `none`, `low`, `medium`, or `high` (default `none`) — the configured reasoning level for this model; forwarding is governed by the model's wire contract (see below). |
+| `max_reasoning_tokens` | `integer` | Upper bound for reasoning output tokens (default 48,576). |
+| `reasoning` | `object` | Explicit reasoning wire contract for this endpoint (see below). |
+| `message_protocol` | `object` | Explicit message wire contract for this endpoint (see below). |
+| `request_parameter_policy` | `object` | Fine-grained control of request parameters (see below). |
+| `input_modalities` / `output_modalities` | `list` | Supported modalities: `text`, `image`, `audio`. |
+| `alias` | `string` | Upstream model name to request when it differs from the local config key. |
+| `api_key_env_var` | `string` | Name of the environment variable holding the API key (cloud providers). |
+| `context_window` / `max_completion_tokens` / `context_safety_margin` | `integer` | Context management overrides for the model. |
+| `compaction_threshold` / `pruning_threshold` | `integer` | Short-term memory compaction / pruning thresholds in tokens. |
+| `background_process_default` | `boolean` | Legacy single-flag marker for background processing — only evaluated when no `__model_selection__` section is present. |
 
 > ⚠️ If exclusive local privacy is enabled, the engine needs at least one valid local model in `model_config.json`.
 > If your system has less than 16GB RAM or no powerful GPU, consider using cloud models or an external LLM provider.
@@ -597,11 +537,218 @@ The `__queues__` key defines **per-provider request routing queues** in `model_c
 
 > **Note:** The native launcher auto-generates and manages this section during setup. In custom or manual setups, you are responsible for declaring your queues explicitly to match your actual server capacity.
 
+#### Model Usage Hierarchy: `__model_selection__`
+
+Since v1.0.0, engine-internal work does not silently reuse the user's chat model. Two **model fallback use-cases** are defined centrally:
+
+| Use case | Used by | Never used by |
+|----------|---------|---------------|
+| `background` | Dreaming runs, LTM cache synchronization | Scheduler jobs, interactive chats, subagents, planner/validator, compaction |
+| `secondary` | STM synchronization, Graphiti small-model calls | Scheduler jobs, interactive chats, normal and parallel subagents, planner/validator, compaction |
+
+Interactive requests and explicitly user-chosen models **never** receive an automatic model switch.
+
+For local models, the fallback chain is declared as a reserved top-level section — analogous to `__queues__` — keyed by privacy level:
+
+```json
+{
+  "__model_selection__": {
+    "background": {
+      "Exclusive": [
+        "qwen3.6-35b-a3b-thinking",
+        "qwen3.5-32b-vllm"
+      ]
+    },
+    "secondary": {
+      "Exclusive": [
+        "qwen3.6-35b-a3b-thinking",
+        "qwen3.5-32b-vllm"
+      ]
+    }
+  }
+}
+```
+
+- The list is an **ordered fallback chain**: the engine only moves to the next candidate when a call fails *before any output token* (reasoning, text, or tool-call delta) has been produced.
+- `background` and `secondary` are independent — each may point to a different chain, and each privacy level (`Exclusive`, `Standard`) can declare its own chain.
+- Validation: every candidate must exist in `model_config.json`, carry the declared privacy level, must not be duplicated, and lists must not be empty.
+- For Premium (cloud) privacy levels the hierarchy is fixed by the engine and cannot be overridden.
+- Legacy fallback: when no `__model_selection__` section is present, `background` uses the model flagged with `"background_process_default": true` — or the first `Exclusive` model if no flag is set.
+
+#### Reasoning & Message Wire Contracts
+
+The optional `reasoning` and `message_protocol` blocks describe the *actual wire contract* of a concrete endpoint, while the per-model `reasoning_effort` (`none`, `low`, `medium`, `high`) selects the configured reasoning level. The engine does not auto-detect a model vendor's native API — new model/provider combinations should declare the blocks explicitly, so reasoning, role, and tool-call formats stay visible without reading proxy code.
+
+> ⚠️ A model either declares **both** the `reasoning` and `message_protocol` blocks (direct contract) or **neither** (documented legacy family profile derived from `provider` / `proxy_family`). Declaring only one of the two is invalid.
+
+**`reasoning` block**
+
+```json
+{
+  "reasoning_effort": "medium",
+  "reasoning": {
+    "replay_history": true,
+    "history_field": "reasoning",
+    "forward_reasoning_effort": true,
+    "enable_thinking": null,
+    "preserve_thinking": true,
+    "clear_thinking": null
+  }
+}
+```
+
+| Field | Effect |
+|-------|--------|
+| `replay_history` | Sends stored assistant reasoning back on each request, or removes it from assistant messages. |
+| `history_field` | Historic assistant reasoning is sent exclusively as `reasoning` or exclusively as `reasoning_content` — never both. |
+| `forward_reasoning_effort` | Forwards the existing `reasoning_effort` value to the endpoint (there is no second effort setting). |
+| `enable_thinking` | `true`/`false` is sent verbatim as `chat_template_kwargs.enable_thinking`; `null` omits it. |
+| `preserve_thinking` | `true`/`false` is sent verbatim as `chat_template_kwargs.preserve_thinking`; `null` omits it. |
+| `clear_thinking` | `true`/`false` is sent verbatim as `chat_template_kwargs.clear_thinking`; `null` omits it. |
+
+`null` always means *omit*, never `false`. `preserve_thinking` and `clear_thinking` are **not** modeled as opposites — both are model endpoint/template-specific wire parameters and should only be set after a smoke test of the concrete endpoint. `reasoning_effort` and `enable_thinking` are independent: a llama.cpp endpoint may, for example, interpret any non-`none` effort as thinking activation and a valid configuration may therefore intentionally send no `enable_thinking`.
+
+**`message_protocol` block**
+
+```json
+{
+  "message_protocol": {
+    "developer_message_mode": "preserve",
+    "mid_history_system_message_mode": "preserve",
+    "merge_consecutive_user_messages": false,
+    "assistant_tool_call_content_mode": "preserve",
+    "tool_call_id_max_length": null
+  }
+}
+```
+
+| Field | Effect |
+|-------|--------|
+| `developer_message_mode` | `preserve`, `user`, or `leading_system_then_user`. |
+| `mid_history_system_message_mode` | `preserve` or `user`; a leading system message is always kept. |
+| `merge_consecutive_user_messages` | Merges consecutive user messages or leaves them untouched. |
+| `assistant_tool_call_content_mode` | `preserve`, `split`, or `extract_reasoning` (moves assistant content into reasoning according to the configured reasoning contract). |
+| `tool_call_id_max_length` | `null` leaves tool-call IDs unchanged; a positive number enables consistent truncation including tool references. |
+
+**`request_parameter_policy` block**
+
+```json
+{
+  "request_parameter_policy": {
+    "remove_parameters": ["logprobs"],
+    "extra_body": {},
+    "extra_body_when_reasoning_requested": {},
+    "extra_body_when_tools_present": {},
+    "reasoning_effort_in_extra_body": false,
+    "send_none_reasoning_effort_when_disabled": false
+  }
+}
+```
+
+| Field | Effect |
+|-------|--------|
+| `remove_parameters` | Request parameters that are never sent to the upstream API. |
+| `extra_body` | Extra fields added to every request body. |
+| `extra_body_when_reasoning_requested` | Extra fields added only when reasoning is requested. |
+| `extra_body_when_tools_present` | Extra fields added only when tools are attached to the request. |
+| `reasoning_effort_in_extra_body` | Also writes `reasoning_effort` into the extra body. |
+| `send_none_reasoning_effort_when_disabled` | Sends an explicit `none` effort instead of omitting it when reasoning is disabled. |
+
+> **Note:** Before putting a new endpoint into production, smoke-test at minimum the reasoning output/input fields, tool-call replay, and the forwarding of `chat_template_kwargs` against the concrete provider.
+
+#### Example: Modern Mixed Local Setup
+
+This example shows a realistic mixed local setup (vLLM for high-throughput serving, llama.cpp for resource-efficient inference). The first two models declare their complete wire contract explicitly, using the blocks described above; the last model declares neither `reasoning` nor `message_protocol` and inherits the documented profile of its `proxy_family`:
+
+```json
+{
+  "gemma-4-26b-a4b-thinking": {
+    "url": "http://192.168.178.93:44410/v1",
+    "provider": "vllm",
+    "temperature": 1.0,
+    "reasoning_effort": "medium",
+    "alias": "gemma-4-26b-a4b-it",
+    "input_modalities": ["text", "image"],
+    "output_modalities": ["text"],
+    "compaction_threshold": 220000,
+    "pruning_threshold": 200000,
+    "reasoning": {
+      "replay_history": true,
+      "history_field": "reasoning",
+      "forward_reasoning_effort": true,
+      "enable_thinking": true,
+      "preserve_thinking": null,
+      "clear_thinking": null
+    },
+    "message_protocol": {
+      "developer_message_mode": "preserve",
+      "mid_history_system_message_mode": "preserve",
+      "merge_consecutive_user_messages": false,
+      "assistant_tool_call_content_mode": "preserve",
+      "tool_call_id_max_length": null
+    },
+    "request_parameter_policy": {
+      "extra_body_when_reasoning_requested": {
+        "skip_special_tokens": false
+      },
+      "extra_body_when_tools_present": {
+        "parallel_tool_calls": true,
+        "skip_special_tokens": false
+      }
+    }
+  },
+  "gemma4-e4b-llamacpp-th": {
+    "url": "http://localhost:44411/v1",
+    "provider": "llama.cpp",
+    "privacy_level": "Exclusive",
+    "temperature": 1.0,
+    "reasoning_effort": "high",
+    "compaction_threshold": 55000,
+    "pruning_threshold": 50000,
+    "input_modalities": ["text", "image"],
+    "output_modalities": ["text"],
+    "reasoning": {
+      "replay_history": true,
+      "history_field": "reasoning",
+      "forward_reasoning_effort": false,
+      "enable_thinking": true,
+      "preserve_thinking": null,
+      "clear_thinking": null
+    },
+    "message_protocol": {
+      "developer_message_mode": "preserve",
+      "mid_history_system_message_mode": "preserve",
+      "merge_consecutive_user_messages": false,
+      "assistant_tool_call_content_mode": "preserve",
+      "tool_call_id_max_length": null
+    },
+    "request_parameter_policy": {
+      "extra_body": {
+        "parallel_tool_calls": true
+      }
+    }
+  },
+  "qwen3-5-9b-llamacpp": {
+    "url": "http://localhost:44412/v1",
+    "provider": "llama.cpp",
+    "proxy_family": "qwen3_5",
+    "privacy_level": "Exclusive",
+    "temperature": 0.2,
+    "compaction_threshold": 55000,
+    "pruning_threshold": 50000,
+    "input_modalities": ["text", "image"],
+    "output_modalities": ["text"]
+  }
+}
+```
+
+> **Note**: This replaces the legacy `proxy_family`-based configuration. Use the new `reasoning` and `message_protocol` blocks for all new setups.
+
 ### `mcp_servers.json` (Optional)
 
 **Configures plugins and external integrations (e.g., APIs, databases).**
 
-We follow closely the Claude Desktop Config so you can mostly copy the config for any given MCP Server.
+Since v1.0.0 the file follows the **Claude `mcpServers` standard**: a top-level `mcpServers` object is required, and every entry is either a **Claude-style entry** (Claude Desktop / Claude Code shape) or a **Ariadne Engine entry**. The engine auto-detects the dialect per entry — a `type` key marks a Claude entry, a `transport` key an Ariadne Engine entry — so you can copy the MCP configuration from Claude Desktop or Claude Code and paste it in unchanged.
 
 **Examples**
 
@@ -665,6 +812,55 @@ We follow closely the Claude Desktop Config so you can mostly copy the config fo
 }
 ```
 
+**Claude-style entries (Claude Desktop / Claude Code)**
+
+The examples above use the Ariadne Engine dialect. Since v1.0.0 you can equally write Claude-style entries — the parser accepts Claude Desktop stdio entries without a `type`, plus Claude Code `stdio`, `http`, `streamable-http`, `sse`, and `ws` entries:
+
+```json
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "node",
+      "args": ["server.js", "${WORKSPACE_DIR:-./workspace}"]
+    },
+    "remote-http": {
+      "type": "streamable-http",
+      "url": "https://mcp.example.com/${TENANT_ID}",
+      "headers": {
+        "Authorization": "Bearer ${API_TOKEN}"
+      },
+      "timeout": 600000,
+      "alwaysLoad": true
+    },
+    "remote-sse": {
+      "type": "sse",
+      "url": "https://mcp.example.com/sse"
+    },
+    "remote-ws": {
+      "type": "ws",
+      "url": "wss://mcp.example.com/mcp"
+    }
+  }
+}
+```
+
+| Claude key | Meaning in the engine |
+|------------|------------------------|
+| `type` | Transport: `stdio` (default when omitted), `http`, `streamable-http` (normalized to `http`), `sse`, `ws`. |
+| `command` (string) + `args` | Command list for stdio servers. The Claude Desktop form (`command` + `args`, or `arguments`) is converted to the engine's command list. |
+| `url` | Endpoint for the remote transports (`http`, `sse`, `ws`). |
+| `env` | Environment variables for the child process (stdio). |
+| `headers` | Static HTTP headers applied to runtime connections. |
+| `timeout` | Per-server timeout in **milliseconds** (engine key: `timeout_ms`). |
+| `alwaysLoad` | Load the server's tools eagerly (engine key: `always_load`). |
+| `headersHelper` | Persisted and exported, but the helper command itself is **not** executed by the engine. |
+| `oauth` | Persisted and exported, but OAuth flows are intentionally **not** automated. |
+| any other key | Unknown properties are preserved as-is, so forward-compatible Claude options survive a parse/export cycle. |
+
+**Environment variable expansion**
+
+`${NAME}` and `${NAME:-default}` references inside `command`/`args`, `url`, and `headers` are resolved **only when the connection is opened** — the stored configuration stays portable across machines and environments.
+
 > ⚠️ The `mcp_servers.json` file is optional. If it is missing, the engine can create a default empty configuration with zero global MCPs.
 
 **Minimal MCP Config**
@@ -726,14 +922,7 @@ Trigger it in the `default` context by instructing Ariadne to do a websearch for
 
 **Docker Deployment Setup:**
 
-In Docker environments, the `mcp_servers.json` file is managed through volume mounts or environment variables. The websearch MCP plugin must be configured in the same way. Obtain an API key as described above and ensure it's written to the config file within the container's filesystem.
-
-For Docker deployments, you can also provide the configuration via environment variable:
-
-```bash
-# Set the path to your mcp_servers.json (with bearer_token populated)
-AAA_MCP_SERVERS_CONFIG=/config/mcp_servers.json
-```
+In Docker environments, the engine reads `mcp_servers.json` from the **same directory as `model_config.json`** (with the example compose file that is `/app/aaa-bundle/`). Obtain an API key as described above and write it into the `bearer_token` field of your mounted `mcp_servers.json`.
 
 Make sure the mounted directory containing `mcp_servers.json` is writable and accessible within the container using long-format bind mounts. See the [Docker Deployment](#docker-deployment) section for mount configuration details.
 
