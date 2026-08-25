@@ -470,7 +470,6 @@ This file tells the engine which models to use, how to connect to them, and wher
 |-------|------|-------------|
 | `url` | `string` (required) | OpenAI-compatible base URL of the backend, e.g. `http://localhost:44410/v1`. |
 | `provider` | `string` (required) | Backend provider: `vllm`, `llama.cpp`, `bitnet.cpp`, `ollama`, `fireworks-ai`, `openai`, `mistral-ai`, `eurouter`. |
-| `proxy_family` | `string` | Protocol family for existing configurations: `default`, `mistral`, `ministral3`, `gemma4`, `qwen3_5`, `qwen3_6`, `eurouter`, `eurouter_kimi` (default `default`). New endpoints should prefer the explicit `reasoning` + `message_protocol` blocks instead. |
 | `privacy_level` | `string` | `Exclusive`, `Standard`, or `Premium` (default `Exclusive`). |
 | `temperature` | `number` | Sampling temperature for the model. |
 | `reasoning_effort` | `string` | `none`, `low`, `medium`, or `high` (default `none`) — the configured reasoning level for this model; forwarding is governed by the model's wire contract (see below). |
@@ -577,9 +576,9 @@ For local models, the fallback chain is declared as a reserved top-level section
 
 #### Reasoning & Message Wire Contracts
 
-The optional `reasoning` and `message_protocol` blocks describe the *actual wire contract* of a concrete endpoint, while the per-model `reasoning_effort` (`none`, `low`, `medium`, `high`) selects the configured reasoning level. The engine does not auto-detect a model vendor's native API — new model/provider combinations should declare the blocks explicitly, so reasoning, role, and tool-call formats stay visible without reading proxy code.
+The optional `reasoning` and `message_protocol` blocks describe the *actual wire contract* of a concrete endpoint, while the per-model `reasoning_effort` (`none`, `low`, `medium`, `high`) selects the configured reasoning level. The engine does not auto-detect a model vendor's native API — new model/provider combinations should declare the blocks explicitly, so reasoning, role, and tool-call formats stay visible without reading proxy code. Existing `proxy_family` settings remain valid (the launcher still writes them for preconfigured models); the explicit blocks described here replace them for new setups, and `docs/model-configuration-wire-contracts.md` documents how the old family profiles map onto this configuration.
 
-> ⚠️ A model either declares **both** the `reasoning` and `message_protocol` blocks (direct contract) or **neither** (documented legacy family profile derived from `provider` / `proxy_family`). Declaring only one of the two is invalid.
+> ⚠️ A model either declares **both** the `reasoning` and `message_protocol` blocks or **neither** (engine defaults: standard message handling, no reasoning replay). Declaring only one of the two is invalid.
 
 **`reasoning` block**
 
@@ -601,7 +600,7 @@ The optional `reasoning` and `message_protocol` blocks describe the *actual wire
 |-------|--------|
 | `replay_history` | Sends stored assistant reasoning back on each request, or removes it from assistant messages. |
 | `history_field` | Historic assistant reasoning is sent exclusively as `reasoning` or exclusively as `reasoning_content` — never both. |
-| `forward_reasoning_effort` | Forwards the existing `reasoning_effort` value to the endpoint (there is no second effort setting). |
+| `forward_reasoning_effort` | Forwards the configured `reasoning_effort` value to the endpoint verbatim (there is no second effort setting). The value is sent including `none`, so endpoints receive an explicit value instead of an omitted parameter. |
 | `enable_thinking` | `true`/`false` is sent verbatim as `chat_template_kwargs.enable_thinking`; `null` omits it. |
 | `preserve_thinking` | `true`/`false` is sent verbatim as `chat_template_kwargs.preserve_thinking`; `null` omits it. |
 | `clear_thinking` | `true`/`false` is sent verbatim as `chat_template_kwargs.clear_thinking`; `null` omits it. |
@@ -624,11 +623,164 @@ The optional `reasoning` and `message_protocol` blocks describe the *actual wire
 
 | Field | Effect |
 |-------|--------|
-| `developer_message_mode` | `preserve`, `user`, or `leading_system_then_user`. |
-| `mid_history_system_message_mode` | `preserve` or `user`; a leading system message is always kept. |
-| `merge_consecutive_user_messages` | Merges consecutive user messages or leaves them untouched. |
-| `assistant_tool_call_content_mode` | `preserve`, `split`, or `extract_reasoning` (moves assistant content into reasoning according to the configured reasoning contract). |
+| `developer_message_mode` | Maps internal `developer` messages to endpoint roles: `preserve` sends them as-is, `user` converts every one to a `user` message, `leading_system_then_user` converts the leading one to `system` and later ones to `user` (see examples below). |
+| `mid_history_system_message_mode` | System messages that appear mid-history are sent as-is (`preserve`) or converted to `user` messages (`user`); a leading system message is always kept (see examples below). |
+| `merge_consecutive_user_messages` | `true` merges consecutive user messages into one message; `false` leaves them untouched. |
+| `assistant_tool_call_content_mode` | For assistant messages that carry tool calls: `preserve` keeps content and calls in one message, `split` separates them into two messages, `extract_reasoning` moves the content into reasoning (see examples below). |
 | `tool_call_id_max_length` | `null` leaves tool-call IDs unchanged; a positive number enables consistent truncation including tool references. |
+
+**What the modes do to the message array**
+
+The `message_protocol` block transforms the internal message array into the form the endpoint expects. The examples below show the internal array before conversion and the array actually sent. The transformations run in this order: merging consecutive user messages, developer role mapping, mid-history system role mapping, then per-message handling (tool-call ID truncation and assistant tool-call content).
+
+`developer_message_mode` — developer messages are internal instruction messages the engine adds (for example, context-specific guidance). The mode decides which role they get on the wire.
+
+Internal array (same input for all three modes):
+
+```json
+[
+  { "role": "developer", "content": "Answer with a single short paragraph." },
+  { "role": "user", "content": "What is the capital of France?" },
+  { "role": "assistant", "content": "Paris." },
+  { "role": "developer", "content": "From now on, answer in German." },
+  { "role": "user", "content": "And the capital of Germany?" }
+]
+```
+
+- `preserve`: the array is sent unchanged — the endpoint must accept the `developer` role.
+- `user`: every developer message becomes a `user` message (named `developer` when it has no name); content and position stay the same:
+
+```json
+[
+  { "role": "user", "name": "developer", "content": "Answer with a single short paragraph." },
+  { "role": "user", "content": "What is the capital of France?" },
+  { "role": "assistant", "content": "Paris." },
+  { "role": "user", "name": "developer", "content": "From now on, answer in German." },
+  { "role": "user", "content": "And the capital of Germany?" }
+]
+```
+
+- `leading_system_then_user`: a developer message that appears before any system or conversation message (typically the first message of the array) becomes the leading `system` message; developer messages later in the history become `user` messages named `developer`:
+
+```json
+[
+  { "role": "system", "content": "Answer with a single short paragraph." },
+  { "role": "user", "content": "What is the capital of France?" },
+  { "role": "assistant", "content": "Paris." },
+  { "role": "user", "name": "developer", "content": "From now on, answer in German." },
+  { "role": "user", "content": "And the capital of Germany?" }
+]
+```
+
+`mid_history_system_message_mode` — controls system messages that appear in the middle of the history. A leading system message (at the start of the array) is always kept as `system`.
+
+Internal array:
+
+```json
+[
+  { "role": "system", "content": "Base system prompt." },
+  { "role": "user", "content": "Hello" },
+  { "role": "assistant", "content": "Hi!" },
+  { "role": "system", "content": "New rule: keep answers under 20 words." },
+  { "role": "user", "content": "Tell me a fact." }
+]
+```
+
+- `preserve`: the array is sent unchanged — the endpoint must accept system messages mid-history.
+- `user`: the mid-history system message becomes a `user` message named `system`:
+
+```json
+[
+  { "role": "system", "content": "Base system prompt." },
+  { "role": "user", "content": "Hello" },
+  { "role": "assistant", "content": "Hi!" },
+  { "role": "user", "name": "system", "content": "New rule: keep answers under 20 words." },
+  { "role": "user", "content": "Tell me a fact." }
+]
+```
+
+`merge_consecutive_user_messages` — `true` merges consecutive user messages into one message: plain-text contents are joined with a blank line, content part arrays are concatenated, and the merged message takes the `name` of the last user message in the run (when present). `false` leaves the array untouched.
+
+```json
+[
+  { "role": "user", "content": "Ignore my previous style." },
+  { "role": "user", "content": "Now: write a haiku." }
+]
+```
+
+becomes, with `true`:
+
+```json
+[
+  { "role": "user", "content": "Ignore my previous style.\n\nNow: write a haiku." }
+]
+```
+
+`assistant_tool_call_content_mode` — applies only to assistant messages that carry at least one tool call.
+
+Internal array:
+
+```json
+[
+  { "role": "user", "content": "What's the weather in Berlin?" },
+  {
+    "role": "assistant",
+    "content": "Let me check the weather service.",
+    "tool_calls": [
+      {
+        "id": "call_1",
+        "type": "function",
+        "function": { "name": "get_weather", "arguments": "{\"city\": \"Berlin\"}" }
+      }
+    ]
+  },
+  { "role": "tool", "tool_call_id": "call_1", "content": "{\"temp_c\": 21}" }
+]
+```
+
+- `preserve`: the array is sent unchanged — one assistant message with both `content` and `tool_calls`.
+- `split`: the assistant message is split into two consecutive assistant messages — the visible text first, then the tool call with `content` set to `null`:
+
+```json
+[
+  { "role": "user", "content": "What's the weather in Berlin?" },
+  { "role": "assistant", "content": "Let me check the weather service." },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "id": "call_1",
+        "type": "function",
+        "function": { "name": "get_weather", "arguments": "{\"city\": \"Berlin\"}" }
+      }
+    ]
+  },
+  { "role": "tool", "tool_call_id": "call_1", "content": "{\"temp_c\": 21}" }
+]
+```
+
+- `extract_reasoning`: the visible text is moved into the message's reasoning fields (`reasoning` and `reasoning_content`), `content` is set to `null`, and the message keeps only the tool call. The `reasoning` block (in particular `replay_history` and `history_field`) decides which reasoning field form the endpoint receives:
+
+```json
+[
+  { "role": "user", "content": "What's the weather in Berlin?" },
+  {
+    "role": "assistant",
+    "content": null,
+    "reasoning": "Let me check the weather service.",
+    "reasoning_content": "Let me check the weather service.",
+    "tool_calls": [
+      {
+        "id": "call_1",
+        "type": "function",
+        "function": { "name": "get_weather", "arguments": "{\"city\": \"Berlin\"}" }
+      }
+    ]
+  },
+  { "role": "tool", "tool_call_id": "call_1", "content": "{\"temp_c\": 21}" }
+]
+```
 
 **`request_parameter_policy` block**
 
@@ -639,8 +791,7 @@ The optional `reasoning` and `message_protocol` blocks describe the *actual wire
     "extra_body": {},
     "extra_body_when_reasoning_requested": {},
     "extra_body_when_tools_present": {},
-    "reasoning_effort_in_extra_body": false,
-    "send_none_reasoning_effort_when_disabled": false
+    "reasoning_effort_in_extra_body": false
   }
 }
 ```
@@ -648,56 +799,55 @@ The optional `reasoning` and `message_protocol` blocks describe the *actual wire
 | Field | Effect |
 |-------|--------|
 | `remove_parameters` | Request parameters that are never sent to the upstream API. |
-| `extra_body` | Extra fields added to every request body. |
-| `extra_body_when_reasoning_requested` | Extra fields added only when reasoning is requested. |
+| `extra_body` | Extra fields added to the top level of every request body. |
+| `extra_body_when_reasoning_requested` | Extra fields added only when `reasoning_effort` is not `none`. |
 | `extra_body_when_tools_present` | Extra fields added only when tools are attached to the request. |
-| `reasoning_effort_in_extra_body` | Also writes `reasoning_effort` into the extra body. |
-| `send_none_reasoning_effort_when_disabled` | Sends an explicit `none` effort instead of omitting it when reasoning is disabled. |
+| `reasoning_effort_in_extra_body` | Writes `reasoning_effort` into the extra body instead of as a top-level parameter. |
+
+> **How the extra fields reach the endpoint:** the keys above are not sent inside a nested `extra_body` object. The engine collects them in the request's `extra_body` collection, and the OpenAI-compatible client used by all proxies flattens that collection verbatim into the **top level of the HTTP request body**. For the Gemma 4 model in the example below, the request actually sent to vLLM therefore contains `"skip_special_tokens": false` and `"parallel_tool_calls": true` as top-level parameters the endpoint understands natively.
 
 > **Note:** Before putting a new endpoint into production, smoke-test at minimum the reasoning output/input fields, tool-call replay, and the forwarding of `chat_template_kwargs` against the concrete provider.
 
-#### Example: Modern Mixed Local Setup
+#### Guided Example: Local Reasoning Models (Gemma 4 + Qwen 3.6)
 
-This example shows a realistic mixed local setup (vLLM for high-throughput serving, llama.cpp for resource-efficient inference). The first two models declare their complete wire contract explicitly, using the blocks described above; the last model declares neither `reasoning` nor `message_protocol` and inherits the documented profile of its `proxy_family`:
+This example shows a realistic mixed local setup (vLLM for high-throughput serving, llama.cpp for resource-efficient inference). Every wire-contract parameter carries a short comment explaining its effect:
 
-```json
+```jsonc
 {
   "gemma-4-26b-a4b-thinking": {
-    "url": "http://192.168.178.93:44410/v1",
-    "provider": "vllm",
+    "url": "http://192.168.178.93:44410/v1",       // vLLM server (OpenAI-compatible endpoint)
+    "provider": "vllm",                             // which proxy speaks to this endpoint
     "temperature": 1.0,
-    "reasoning_effort": "medium",
-    "alias": "gemma-4-26b-a4b-it",
+    "reasoning_effort": "medium",                   // configured reasoning level for this model
+    "alias": "gemma-4-26b-a4b-it",                  // upstream model name the server expects
     "input_modalities": ["text", "image"],
     "output_modalities": ["text"],
     "compaction_threshold": 220000,
     "pruning_threshold": 200000,
     "reasoning": {
-      "replay_history": true,
-      "history_field": "reasoning",
-      "forward_reasoning_effort": true,
-      "enable_thinking": true,
-      "preserve_thinking": null,
-      "clear_thinking": null
+      "replay_history": true,            // send stored historic assistant reasoning back on every request
+      "history_field": "reasoning",      // field name the endpoint uses for historic assistant reasoning
+      "forward_reasoning_effort": true,  // forward the configured effort verbatim (incl. "none")
+      "enable_thinking": true            // sent as chat_template_kwargs.enable_thinking
     },
     "message_protocol": {
-      "developer_message_mode": "preserve",
-      "mid_history_system_message_mode": "preserve",
-      "merge_consecutive_user_messages": false,
-      "assistant_tool_call_content_mode": "preserve",
-      "tool_call_id_max_length": null
+      "developer_message_mode": "preserve",                // developer messages are sent as-is
+      "mid_history_system_message_mode": "preserve",       // mid-history system messages are kept
+      "merge_consecutive_user_messages": false,            // consecutive user turns stay separate
+      "assistant_tool_call_content_mode": "preserve"       // assistant tool-call content unchanged
     },
     "request_parameter_policy": {
+      // keys land at the top level of the HTTP request body (no extra_body wrapper):
       "extra_body_when_reasoning_requested": {
-        "skip_special_tokens": false
+        "skip_special_tokens": false     // vLLM: keep special tokens while the model reasons
       },
       "extra_body_when_tools_present": {
-        "parallel_tool_calls": true,
+        "parallel_tool_calls": true,     // vLLM: allow parallel tool calls
         "skip_special_tokens": false
       }
     }
   },
-  "gemma4-e4b-llamacpp-th": {
+  "qwen-3-6-35b-a3b-thinking": {
     "url": "http://localhost:44411/v1",
     "provider": "llama.cpp",
     "privacy_level": "Exclusive",
@@ -708,41 +858,33 @@ This example shows a realistic mixed local setup (vLLM for high-throughput servi
     "input_modalities": ["text", "image"],
     "output_modalities": ["text"],
     "reasoning": {
-      "replay_history": true,
+      "replay_history": true,             // Qwen stores its reasoning as "reasoning" in history
       "history_field": "reasoning",
-      "forward_reasoning_effort": false,
-      "enable_thinking": true,
-      "preserve_thinking": null,
-      "clear_thinking": null
+      "forward_reasoning_effort": false,  // llama.cpp takes no effort parameter - effort stays internal
+      "enable_thinking": true,            // llama.cpp activates thinking via this chat-template flag
+      "preserve_thinking": true           // Qwen 3.6: keep earlier thinking blocks when replaying history
     },
     "message_protocol": {
-      "developer_message_mode": "preserve",
-      "mid_history_system_message_mode": "preserve",
+      "developer_message_mode": "leading_system_then_user", // developer message becomes leading system + user
+      "mid_history_system_message_mode": "user",            // mid-history system messages become user messages
       "merge_consecutive_user_messages": false,
-      "assistant_tool_call_content_mode": "preserve",
-      "tool_call_id_max_length": null
-    },
-    "request_parameter_policy": {
-      "extra_body": {
-        "parallel_tool_calls": true
-      }
+      "assistant_tool_call_content_mode": "preserve"
     }
+    // no request_parameter_policy: this endpoint needs no extra top-level request parameters
   },
-  "qwen3-5-9b-llamacpp": {
+  "small-fast-model": {
     "url": "http://localhost:44412/v1",
     "provider": "llama.cpp",
-    "proxy_family": "qwen3_5",
     "privacy_level": "Exclusive",
     "temperature": 0.2,
-    "compaction_threshold": 55000,
-    "pruning_threshold": 50000,
-    "input_modalities": ["text", "image"],
+    "input_modalities": ["text"],
     "output_modalities": ["text"]
+    // no wire-contract blocks: standard engine defaults apply (simple non-reasoning chat model)
   }
 }
 ```
 
-> **Note**: This replaces the legacy `proxy_family`-based configuration. Use the new `reasoning` and `message_protocol` blocks for all new setups.
+> **Note**: Models whose endpoints need no special handling declare none of the three blocks and run on the engine defaults. All new setups are configured with the explicit blocks; `docs/model-configuration-wire-contracts.md` documents how the preconfigured `proxy_family` profiles map onto them.
 
 ### `mcp_servers.json` (Optional)
 
