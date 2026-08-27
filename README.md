@@ -215,7 +215,7 @@ This mode is intended for users who want to:
 
 #### 2. Docker Deployment (For technical users - isolated environment)
 
-Docker is the more explicit and more configurable deployment path. It is the better choice if you want to deploy the **engine backend**, the **web app frontend**, optional **local model servers**, and **FalkorDB** as separate services with clear boundaries.
+Docker is the more explicit and more configurable deployment path. It is the better choice if you want to deploy the **engine backend**, the **web app frontend**, and optional **local model servers** as separate services with clear boundaries, or if you want to run the optional **FalkorDB** graph service separately instead of the embedded Ladybug core.
 
 **Requirements:**
 - [ ] **Docker** (v20.10+)
@@ -277,7 +277,7 @@ This approach guarantees that **all mounted directories and files are created by
 
 ### Example Docker Compose Configuration
 
-This example uses the **Long format Volumes** pattern (see above for why) and sets up the engine with local model servers (Gemma 4e4b + Qwen3.6 MoE):
+This example uses the **Long format Volumes** pattern (see above for why) and sets up the engine with local model servers (Gemma 4e4b + Qwen3.6 MoE). It configures the **optional FalkorDB** graph service; for the default embedded **Ladybug** graph core, remove the `falkordb` service and the `AAA_GRAPHITI_BACKEND` / `AAA_FALKORDB_*` variables:
 
 ```yaml
 networks:
@@ -425,7 +425,7 @@ services:
       - ariadne-network
 ```
 
-See `docker-compose-example.yml` in this repository for a full setup including local model servers and FalkorDB.
+See `docker-compose-example.yml` in this repository for a full multi-service setup including local model servers. The example shows the optional FalkorDB graph service in full and marks every part that can be removed for the default embedded Ladybug core.
 
 ---
 
@@ -1342,32 +1342,30 @@ The Ariadne Engine uses different storage layers depending on which features you
 - **How it works**:
 The engine manages these folders automatically. No manual setup is required for normal operation.
 
-### 2. Graph Backends: FalkorDB or Ladybug (Embedded)
+### 2. Graph Backends: Ladybug (Embedded, Default) or FalkorDB (External, Optional)
 
-Choose your graph backend via the `AAA_GRAPHITI_BACKEND` environment variable:
+Choose your graph backend via the `AAA_GRAPHITI_BACKEND` environment variable. **Ladybug is the default and recommended backend for both native and Docker deployments.**
 
-**FalkorDB (External Service - Recommended for Scaling Cloud Environments)**
-- **Location**: Usually `./databases/falkordb/` in Docker setups
-- **What's stored**:
-  - Knowledge graphs
-  - Long-term memory data
-  - Graph-oriented connections across documents and structured entities
-- **When to use**: Multi-user deployments, production environments, or when you want graph features independent of the engine container
-
-**Ladybug (Embedded - Recommended for Single-Instance)**
+**Ladybug (Embedded - Default & Recommended)**
 - **Location**: `./databases/user_*/` (embedded per-user, `data.lbug`)
-- **What's stored**: Same as FalkorDB but embedded directly in the user database directory
-- **When to use**: Single-instance deployments, local-only setups, or when you want zero external dependencies
-- `AAA_GRAPHITI_BACKEND=ladybug` is the default for native deployments (Docker default: `falkordb`)
+- **What's stored**: Knowledge graphs, long-term memory data, and graph-oriented connections across documents and structured entities, embedded directly in the user database directory.
+- **When to use**: The default choice: single-instance deployments, local-only setups, and Docker deployments with zero external dependencies.
+- `AAA_GRAPHITI_BACKEND=ladybug` is the default for native **and Docker** deployments; set `AAA_GRAPHITI_BACKEND=falkordb` only if you specifically want the external graph service.
 - **Upgrading from v0.3.x (Kuzu)**: existing embedded Kuzu databases are **automatically migrated to Ladybug** on the first start after the upgrade. The migration runs before the server starts and keeps a backup of the original data (configurable via `AAA_LADYBUG_MIGRATION_BACKUP_ROOT`). The legacy value `AAA_GRAPHITI_BACKEND=kuzu` is deprecated and now selects the Ladybug backend.
+
+**FalkorDB (External Service - Optional)**
+- **Location**: Usually `./databases/falkordb/` in Docker setups
+- **What's stored**: The same data as Ladybug, served by a separate external graph service.
+- **When to use**: Multi-user deployments or production cloud environments where you want graph features independent of the engine container.
+- **Status**: FalkorDB is fully implemented, but it is not part of the default deployment path and has not been covered by the standard release tests since v0.2.0. Use the embedded Ladybug core unless you specifically need the external service.
 
 **Important background**
 
 - The engine itself can run **without** a graph backend.
 - If no graph backend is available, the engine still works, but **knowledge graphs and graph-backed long-term memory are unavailable**.
-- In v1.0.0 you choose between FalkorDB and the embedded Ladybug core via environment variables. Upgrading an embedded Kuzu database to Ladybug happens automatically and one-way at startup.
+- In v1.0.0 you choose between the embedded Ladybug core (default for native and Docker) and the optional external FalkorDB service via environment variables. Upgrading an embedded Kuzu database to Ladybug happens automatically and one-way at startup.
 
-**Recommended FalkorDB service** (for Docker):
+**Optional FalkorDB service** (for Docker, only with `AAA_GRAPHITI_BACKEND=falkordb`):
 
 ```yaml
 falkordb:
@@ -1392,7 +1390,7 @@ The engine uses a highly modular configuration model centered around flexible JS
 **Essential Environment Variables:**
 - `AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED` (default: `true`): Enables exclusive local model access via `model_config.json`.
 - `AAA_EMBEDDINGS_BASE_URL`: **Required** for embeddings and retrieval features. Set to your embedding server endpoint (e.g., `http://llama-cpp-embedding-server:8080/v1`).
-- `AAA_GRAPHITI_BACKEND`: Choose between `ladybug` (embedded per-user graph core, default for native deployments) and `falkordb` (external graph service, default for Docker). The legacy value `kuzu` is deprecated — it now selects the embedded backend and triggers the automatic one-way Kuzu → Ladybug migration.
+- `AAA_GRAPHITI_BACKEND`: Choose between `ladybug` (embedded per-user graph core, **default for native and Docker deployments**) and `falkordb` (optional external graph service for scaling; not covered by the standard release tests since v0.2.0). The legacy value `kuzu` is deprecated — it now selects the embedded backend and triggers the automatic one-way Kuzu → Ladybug migration.
 - `MODEL_CONFIG_PATH`: Recommended path to your local model routing configuration.
 
 **Context Pruning & Compacting Variables:**
@@ -1458,7 +1456,7 @@ AAA_DEPLOYED_ON_LINUX_PUBLIC_SERVER=0          # Set to 1 to enable ClamAV & san
 |----------|---------|-------------|
 | `MODEL_CONFIG_PATH` | (current dir) | Location of the central LLM routing config file |
 | `AAA_EMBEDDINGS_BASE_URL` | - | **Required**. Base URL for your embeddings/retrieval service |
-| `AAA_GRAPHITI_BACKEND` | `ladybug` (native) / `falkordb` (Docker) | Embedded graph core: `ladybug` (embedded per-user database) or `falkordb` (external). Legacy value `kuzu` selects the embedded backend and triggers the one-way Kuzu → Ladybug migration. |
+| `AAA_GRAPHITI_BACKEND` | `ladybug` | Graph core: `ladybug` (embedded per-user database, default for native and Docker deployments) or `falkordb` (optional external service). Legacy value `kuzu` selects the embedded backend and triggers the one-way Kuzu → Ladybug migration. |
 | `AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED` | `true` | Enables local/offline model usage via `model_config.json` |
 | `AAA_IS_PRIVACY_LEVEL_PREMIUM_ENABLED` | `false` | Routes to paid cloud LLMs (Mistral/OpenAI/Fireworks) |
 | `AAA_FALKORDB_HOST` / `PORT` / `PASSWORD` | - | External database connection details |
