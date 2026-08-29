@@ -1,16 +1,24 @@
 ---
 name: default-context-introduction
-description: Onboard the user in the immutable default context, explain contexts, tools, and skills, and guide them toward creating or moving into a dedicated context for real work.
+description: "Load this skill whenever the user asks for help with the Ariadne Engine itself — first run, setup, client/UI questions, terminal or file access configuration, MCP setup, or troubleshooting — especially right after a fresh installation (Alpha chat or default context). It also contains instructions on how to manage the engine (contexts, mcps, file access)"
 tools:
   - delegate_subagent_task
-tags: [onboarding, default-context, einführung, kontext-erklärung, begrüßung]
+tags: [onboarding, default-context, einführung, kontext-erklärung, begrüßung, setup, engine-einrichtung, terminal-access, bubblewrap, mcp]
 ---
 
 # Default Context Introduction
 
 ## Purpose
 
-Use this skill whenever the current chat runs inside the `default` context.
+Use this skill whenever whenever the user asks for help **using or setting up the Ariadne Engine itself**:
+
+- first contact after a fresh installation (Alpha chat / default context),
+- launcher, first run, and engine startup questions,
+- choosing the right client (native Flutter app vs. webapp),
+- terminal access / local automation (AI file & shell tools, Bubblewrap on Linux),
+- MCP server setup (global `mcp_servers.json`, per-user MCP registrations),
+- skills and capability discovery,
+- context creation and moving real work into a dedicated context.
 
 This context is primarily an onboarding and orientation space. Treat it as the place where you:
 - welcome the user,
@@ -20,6 +28,106 @@ This context is primarily an onboarding and orientation space. Treat it as the p
 - and push the user toward creating or using a more specific context for actual ongoing work.
 
 Do not treat the default context as the ideal long-term workspace. Make that explicit.
+
+## First Contact Rule
+
+When this skill is loaded:
+
+1. **First ask the user what they want to do right now** — what they are trying to achieve or what they need help with. Do not assume a goal.
+2. Then guide them **step by step**:
+   - one concrete step at a time,
+   - after each step, briefly ask what they see / whether it worked,
+   - do **not** monologue the entire setup at once.
+3. Match the user's level: for non-technical users, explain concepts first (MCP = plugin/integration, context = workspace, skill = reusable capability).
+
+## Engine Setup & Usage Guidance
+
+### Client Choice: Native Flutter App vs. Webapp
+
+- The **native binary** (Windows / Linux, the end-user download bundles) pairs with the **native Ariadne Flutter App** shipped in the same directory. **This is the default UI path**: for a native installation, "the UI" is the bundled Flutter app (start via the launcher option "Start Server and App", or start the app separately against the running engine).
+- The **webapp** is an **optional component for professional/Docker setups** (deployed via Docker, with BFF). It can talk to a native engine or a Docker engine, but it is **not** part of the standard native end-user setup.
+- **Never** recommend the webapp UI or web URLs (e.g. `http://localhost:43380`) to a user of a **native** installation as the way to use or verify the engine. If a native user asks "where is the UI?", answer: the bundled native Ariadne Flutter App.
+- Verifying the **backend** of any deployment: `curl http://localhost:44444/health`.
+
+### Terminal Access & Local Automation (AI file & shell tools)
+
+What it is: the engine's AI can read and write files and (optionally) execute shell commands. This is governed by `local_automation_policy.json` (next to `model_config.json`; path override `AAA_LOCAL_AUTOMATION_POLICY_CONFIG`).
+
+Key facts (use these, do not invent alternatives):
+
+- Access levels per root:
+  - `ro` — read files only (via `fs_read_command`),
+  - `rw` — read + write via the file tools (`fs_write_command`, `edit_file`, `write_file`),
+  - `rwx` — everything plus shell execution via `exec_terminal_command`.
+- **The file tools work WITHOUT terminal access** — an `rw` root is enough for the AI to create and edit files. Shell execution additionally needs `rwx` and an active terminal runtime mode.
+- `terminal_runtime_mode` options: `disabled` (no shell tools), `bubblewrap` (sandboxed shell, Linux only), `trusted_host` (unsandboxed shell, any OS — for already isolated environments).
+- **Bubblewrap on Linux** (the recommended sandboxed shell mode) — complete setup, in this order:
+  1. Install bubblewrap: `sudo apt install bubblewrap`.
+  2. Set `"terminal_runtime_mode": "bubblewrap"` in `local_automation_policy.json`.
+  3. **AppArmor (required on Ubuntu/Debian, including WSL2):** by default AppArmor blocks `bwrap` from creating user namespaces, so the terminal stays broken until a small profile is installed. Create `/etc/apparmor.d/bwrap` (e.g. `sudo nano /etc/apparmor.d/bwrap`) with exactly this content:
+
+     ```txt
+     abi <abi/4.0>,
+     include <tunables/global>
+
+     profile bwrap /usr/bin/bwrap flags=(unconfined) {
+       userns,
+       include if exists <local/bwrap>
+     }
+     ```
+
+  4. Load the profile: `sudo apparmor_parser -r /etc/apparmor.d/bwrap`.
+  5. **Windows:** native Windows cannot run bubblewrap — use WSL2 (run steps 1–4 inside the WSL2 distribution) or `trusted_host` mode without a sandbox.
+  6. **Docker deployments:** bubblewrap runs inside the engine container; the compose service needs `privileged: true` and `security_opt: [apparmor=unconfined, seccomp=unconfined]`, and the AppArmor profile from step 3 is installed on the **Linux host** running Docker.
+- Do not let the user experiment with AppArmor rules. If shell execution still fails after the steps above, re-verify that the profile file and the `apparmor_parser` step were executed correctly, and in any doubt point to the public README sections "Bubblewrap AppArmor Configuration (Linux & WSL2)" and "Docker Compose Sandbox Requirements".
+- Minimal example policy for a workspace with shell access:
+
+  ```json
+  {
+    "roots": [
+      { "path": "/home/user/projects/my-app", "access": "rwx", "requires_approval": false }
+    ],
+    "terminal_runtime_mode": "bubblewrap"
+  }
+  ```
+
+- `"requires_approval": true` on a root adds a user confirmation before any tool touches that directory.
+- **Per-user workspaces:** `local_automation_user_policy_template.json` (pre-configured in the native bundle, next to `model_config.json`) is applied automatically when a user gets their personal policy for the first time. Relative paths in it resolve to the user's own storage directory, so each user gets their own workspace folder (e.g. a `workspace` root with `rw`) without any manual setup.
+
+### MCP Servers
+
+- **Single-user setups (including the native end-user bundles):** maintain the global `mcp_servers.json` next to `model_config.json` (Claude `mcpServers` standard). Its entries are synchronized into the user's MCP registry when a new user database is created, and re-synced on every engine start (hash check).
+- **File structure** (`mcp_servers.json` — one object per server under the top level `mcpServers`): the native bundle already ships a pre-configured file with the webresearch plugin; this is the file the user edits to add or adjust plugins:
+
+  ```json
+  {
+    "mcpServers": {
+      "ariadne-webresearch-mcp": {
+        "name": "Ariadne Webresearch MCP",
+        "description": "Use MCP tools for web search and webcrawler retrieval with chunk-aware content handling.",
+        "transport": "http",
+        "command": [],
+        "url": "https://ariadne-webresearch-mcp.ariadneanyverse.de/mcp",
+        "bearer_token": "YOUR_GENERATED_API_KEY_HERE",
+        "env": null,
+        "tags": null,
+        "created_at": "2026-05-25"
+      }
+    }
+  }
+  ```
+
+  Fields per entry: `transport` = `http` (use `url`), `sse`, `ws`, or `stdio` (use `command`); `bearer_token` authenticates HTTP endpoints (the bundle ships a placeholder that the user replaces with their API key, see "Websearch Setup"); `env` holds environment variables for `stdio` commands.
+- **Per-user MCPs:** users can create, update, and delete their own MCP server registrations from the app/API when `AAA_ALLOW_USER_MCP_REGISTRY_MUTATIONS` is enabled. It is **enabled by default in the native binary** (`1`) and disabled by default in Docker (`0`). Professional or multi-user deployments set it to `0` in their `.env`.
+- **Websearch plugin:** see the "Websearch Setup" section below (bearer token flow in `mcp_servers.json`).
+
+### Pre-configured Files in the Native Bundle
+
+The native end-user bundle ships these files already configured, next to `model_config.json` — users normally never have to create them:
+
+- `mcp_servers.json` — MCP plugins (webresearch entry with a placeholder `bearer_token` to fill in once),
+- `dreaming_runtime_config.json` — schedule for autonomous background "dreaming" runs (`weekdays`, `times_of_day`, `timezone`, `cooldown_minutes`),
+- `local_automation_user_policy_template.json` — per-user workspace template (a `workspace` folder with `rw` access, auto-created per user).
 
 ## What You Must Explain
 
@@ -149,6 +257,13 @@ In that case, the user has to click on the user Icon in the top right corner of 
 has to create a new API Key (section "API Key for Authorising of Agents").
 This API key must be copied into the `bearer_token` field in their `mcp_servers.json` for the `ariadne-webresearch-mcp` entry.
 
+## Behavior Rules For Engine-Setup Questions
+
+- Answer setup questions concretely from this skill and the public README content; do not invent configuration details, file locations, or defaults.
+- **In any doubt, refer the user to the public README — it is the complete source of truth** (especially AppArmor profiles, env variables, and JSON file formats). If this skill and the README ever differ, the README wins: tell the user and follow the README.
+- For **native** setups, never cite webapp URLs or HTTP endpoints as "the way to check" the engine — the UI is the native Flutter app; the backend health check is `curl http://localhost:44444/health`.
+- Recommend the smallest workable step first (e.g. an `rw` workspace root with the file tools before enabling bubblewrap shell execution).
+- If the user's setup is professional or multi-user, point them to the "Native Binary Defaults (Administrator Reference)" section of the public README and recommend reading the README plus all configuration files.
 
 ## Response Style In The Default Context
 
@@ -164,8 +279,11 @@ This API key must be copied into the `bearer_token` field in their `mcp_servers.
 If the conversation starts in the default context and the user has not yet chosen a concrete task, a strong pattern is:
 
 1. welcome the user,
-2. explain that they are in the default onboarding context,
-3. explain what contexts are,
-4. explain that skills can extend the system,
-5. mention that `manage-user-skills` can help build new reusable capabilities,
-6. and recommend creating or moving into a dedicated context for the real task.
+2. **ask what they want to do right now** (per the First Contact Rule),
+3. explain that they are in the default onboarding context,
+4. explain what contexts are,
+5. explain that skills can extend the system,
+6. mention that `manage-user-skills` can help build new reusable capabilities,
+7. and recommend creating or moving into a dedicated context for the real task.
+
+If the user instead asks a setup or usage question (launcher, client, terminal access, MCP, websearch), skip straight to the matching section in "Engine Setup & Usage Guidance" and guide them step by step.

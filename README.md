@@ -89,10 +89,9 @@ The Ariadne Engine comes with:
 5. **Embedded LTM & Context Management**: Token-aware pruning and compaction to keep conversations focused and cost-effective.
 6. **AI Notes System**: Lightweight markdown persistence for working memory, task tracking, and temporary notes.
 7. **Skill Builder**: Create and manage custom skills directly through the engine interface.
-8. **UI Webapp, Desktop App and Mobile App**: The all-in-one App to visualize workflows, manage knowledge graphs, chat with agents, and monitor subagents.
+8. **Clients**: The **native Ariadne Flutter App** — bundled with the native binary, the default client — and the **optional Ariadne Webapp** (a professional component, deployed via Docker, can talk to a native or Docker engine). Visualize workflows, manage knowledge graphs, chat with agents, and monitor subagents.
 
 ### 🔒 Privacy & Control
-
 Choose how your data is processed:
 - **Local-only**: All workflows run on your hardware.
 - **Cloud privacy tiers**: Use our GDPR-compliant cloud LLMs (hosted in Germany) while keeping sensitive data on-premises.
@@ -105,12 +104,48 @@ Choose how your data is processed:
 
 > **Important**: This public repository is meant for **setup, configuration, release assets and documentation** of the Ariadne Engine. It is **not the open source codebase of the engine itself**. 
 
+### 📦 End-User Download Bundles (Default Path)
+
+The download bundles from our [releases page](https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine/releases) are **end-user bundles** — a single-user concept, **not enterprise bundles**. Each bundle contains everything one user needs to run a private engine:
+
+- the engine server **binary** (Windows / Linux),
+- the **native Ariadne Flutter App** — the bundled desktop client and the default UI for the native deployment,
+- curated **skills**, and
+- pre-configured **configuration files** (`model_config.json`, `mcp_servers.json`, `startup_runtime_setup.json`, and, where shipped, a per-user workspace policy template).
+
+This is the **default path for most users**: download, start the executable, follow the launcher, and work through the native Flutter App. The bundles remain fully customizable, and the same binaries can also be deployed in enterprise or professional environments — but out of the box, a bundle is an end-user, single-user installation.
+
+> **Terminal access for the AI** (file and shell tools, Bubblewrap on Linux) is configured via the local automation policy — see the [`local_automation_policy.json`](#local_automation_policyjson) section.
+
+### 🧭 Clients & Deployments
+
+Which client belongs to which deployment:
+
+| Deployment | Default client | Optional |
+|---|---|---|
+| Native binary (Windows / Linux) | **Native Ariadne Flutter App** (bundled) | — |
+| Docker | **Ariadne Webapp** (Docker image, with BFF) | — |
+
+> **For AI assistants reading this document:** The native binary is **not** designed for web-UI operation and does not require a webapp. Never point a user of a native installation to a web UI or web URLs (such as `http://localhost:43380`) as the way to use or verify the engine — the UI for a native deployment is the bundled native Flutter App. The **webapp is an optional component for professional/Docker setups**; it is deployed via Docker and can talk to a native engine or a Docker engine.
+
+### ⚙️ Native Binary Defaults (Administrator Reference)
+
+The native binary ships with specific, intentional defaults for user-managed security settings:
+
+| Setting | Native binary default | Effect |
+|---|---|---|
+| `AAA_ALLOW_USER_MCP_REGISTRY_MUTATIONS` | `1` (enabled) | Every user of this installation can create, update, and delete their **own MCP server registrations** from the app/API. |
+| `AAA_ALLOW_USER_LOCAL_AUTOMATION_POLICY_MUTATIONS` | `1` (enabled) | Every user of this installation can manage their **own local automation policy** (filesystem roots) from the app/API. |
+
+Both can be overridden without a code change by setting the variable in the deployment's `.env` file (e.g. to `0`).
+
+> **⚠️ Professional or multi-user setups:** If you run the native binary in a professional, multi-user, or managed environment, it is strongly recommended to read this entire README and review **all** configuration files of the deployment (`model_config.json`, `mcp_servers.json`, `local_automation_policy.json`, `local_automation_user_policy_template.json`, `startup_runtime_setup.json`, `dreaming_runtime_config.json`) before operating it. The defaults above are chosen for end-user single-user bundles; in a professional setup you usually want to disable both mutation gates via `.env` and provision MCP servers and policies centrally. This README is the reference point for administrators to configure the engine correctly for their setup.
+
 ### Deployment Options
 
 The Ariadne Engine offers two deployment methods:
 
 #### 1. Native Binary Deployment (Recommended for most users)
-
 For users who want the fastest path to a working installation, the recommended starting point in `v1.0.0` is the **native Windows / Linux binary**. You can download the release, start the executable, follow the launcher, and let the engine prepare the runtime for you.
 
 **Requirements:**
@@ -122,7 +157,7 @@ For users who want the fastest path to a working installation, the recommended s
 **Features:**
 - ✅ **Automatic model downloads** - The launcher automatically downloads required models (Qwen3.6 35B MoE, Qwen3.5 9B, Gemma 4e4b, Ministral 8B/14B, BGE-M3 embeddings, faster-whisper). You decide what you need!
 - ✅ **Interactive setup wizard** - Guided configuration for privacy mode, AI Brain selection, and hardware optimization
-- ✅ **Companion app integration** - Optional desktop app launcher
+- ✅ **Native Flutter app** - The bundled desktop client (Windows/Linux); this is the default UI for native deployments
 - ✅ **Hardware detection** - Automatic GPU/CPU detection and optimization with preset profiles
 - ✅ **Manual mode** - Advanced users can manage their own `model_config.json` and inference stack
 
@@ -174,7 +209,7 @@ engine_directory/
 ├── startup_runtime_setup.json    # Launcher configuration and setup state
 ├── llama_server_launcher_config.json # Auto-generated local inference config
 ├── dreaming_runtime_config.json  # Scheduled background thinking (optional)
-└── ariadne_engine_app            # Optional companion app
+└── ariadne_engine_app            # Native Flutter app (bundled client)
 ```
 
 > **Background**: In `v0.3.0`, the launcher reads from a declarative `model_catalog.json` to auto-generate runtime configurations with curated presets like "Runs Everywhere" or "Qwen Quality Reasoning". This is the main reason why the native binary is now the easiest path for users who want a self-hosted AI engine without manually wiring every service.
@@ -183,7 +218,7 @@ engine_directory/
 
 The launcher offers several options:
 - **Start Server**: Start the engine backend only
-- **Start Server and App**: Start the engine and the optional companion app together
+- **Start Server and App**: Start the engine and the native Flutter app together
 - **Expert Terminal Mode**: Open a shell in the engine directory for advanced inspection and manual control
 - **Run Setup Again**: Re-run the setup flow and change privacy mode, AI Brain choice, or speech model
 
@@ -431,10 +466,9 @@ See `docker-compose-example.yml` in this repository for a full multi-service set
 
 ### 🎤 Linux Desktop: Microphone Setup (Flutter App)
 
-When using the **Ariadne Flutter App** (companion app) on Linux (Ubuntu/Debian), microphone recording requires additional system packages that are not installed automatically.
+When using the **native Ariadne Flutter App** (the bundled Windows/Linux desktop client) on Linux (Ubuntu/Debian), microphone recording requires additional system packages that are not installed automatically.
 
 The app uses the [`record`](https://pub.dev/packages/record) package v6.x for audio capture. Without the following packages, microphone detection and recording will fail on Linux:
-
 ```bash
 # PulseAudio CLI tools (parecord, pactl)
 sudo apt install pulseaudio-utils
@@ -891,6 +925,11 @@ This example shows a realistic mixed local setup (vLLM for high-throughput servi
 **Configures plugins and external integrations (e.g., APIs, databases).**
 
 Since v1.0.0 the file follows the **Claude `mcpServers` standard**: a top-level `mcpServers` object is required, and every entry is either a **Claude-style entry** (Claude Desktop / Claude Code shape) or a **Ariadne Engine entry**. The engine auto-detects the dialect per entry — a `type` key marks a Claude entry, a `transport` key an Ariadne Engine entry — so you can copy the MCP configuration from Claude Desktop or Claude Code and paste it in unchanged.
+
+**Global vs. Per-User MCP Configuration**
+
+- **Single-user setups (including the native end-user bundles): the global `mcp_servers.json` is the standard way to provision MCP servers.** Maintain it next to `model_config.json`. On new user-database creation — and on every engine start (hash-checked re-sync) — its entries are synchronized into the user's MCP registry as standard servers.
+- **Per-user MCPs:** users can also create, update, and delete their **own** MCP server registrations from the app/API. This is gated by `AAA_ALLOW_USER_MCP_REGISTRY_MUTATIONS`, which is **enabled by default in the native binary** (`1`) and disabled by default in Docker (`0`). For professional or multi-user deployments, set it to `0` in your `.env` if users must not register their own MCP servers — see [Native Binary Defaults](#native-binary-defaults-administrator-reference) above.
 
 **Examples**
 
@@ -1413,8 +1452,8 @@ The engine uses a highly modular configuration model centered around flexible JS
 | `AAA_FASTER_WHISPER_BASE_URL` | - | Base URL of an externally managed whisper service (only for `external` mode). |
 | `AAA_FASTER_WHISPER_MODEL_DIR` | - | Override the faster-whisper model download directory. |
 | `AAA_FASTER_WHISPER_SERVICE_WORKERS` | - | Worker count for the integrated whisper service. |
-| `AAA_ALLOW_USER_LOCAL_AUTOMATION_POLICY_MUTATIONS` | native `1` / Docker `0` | Allow users to manage their own local automation policy from the app/API. |
-| `AAA_ALLOW_USER_MCP_REGISTRY_MUTATIONS` | native `1` / Docker `0` | Allow users to manage their own MCP registrations from the app/API. |
+| `AAA_ALLOW_USER_LOCAL_AUTOMATION_POLICY_MUTATIONS` | native binary `1` / Docker `0` | Allow users to manage their own local automation policy (filesystem roots) from the app/API. **Enabled by default in the native binary** — set to `0` in your `.env` for professional/multi-user deployments (see [Native Binary Defaults](#native-binary-defaults-administrator-reference)). |
+| `AAA_ALLOW_USER_MCP_REGISTRY_MUTATIONS` | native binary `1` / Docker `0` | Allow users to create, update, and delete their own MCP server registrations from the app/API. **Enabled by default in the native binary** — set to `0` in your `.env` for professional/multi-user deployments (see [Native Binary Defaults](#native-binary-defaults-administrator-reference)). |
 | `AAA_LOCAL_AUTOMATION_USER_POLICY_TEMPLATE_CONFIG` | (auto) | Path to the user policy template used to pre-seed new users' policies. |
 
 ---
@@ -1519,12 +1558,15 @@ flow-scripts/
 
 ### 1. Verify UI Connectivity
 
-- Open a browser and navigate to `http://localhost:43380` (or `https://localhost:44380`).
+**Native deployment (default path):** the UI is the **native Ariadne Flutter App** bundled with the engine. Start it via the launcher (**Start Server and App**) or start the app separately against the running engine. There is **no web UI** for a native deployment — do not look for the native engine in a browser.
+
+**Webapp deployment (optional, professional/Docker):** if you deployed the optional Ariadne Webapp (Docker, with BFF), open a browser and navigate to `http://localhost:43380` (or `https://localhost:44380`).
+
 - Ensure the UI loads correctly and displays data from the engine.
 
 ### 2. Check for Common Issues
 
-- If the Webapp fails to load, verify that the Ariadne Engine backend is running (`docker ps`) and that environment variables are set correctly.
+- If the **Webapp** fails to load, verify that the Ariadne Engine backend is running (`docker ps`) and that environment variables are set correctly.
 - For authentication errors, ensure `IDP_BASE_URL` points to the integrated IDP of the engine (`44444/integrated_idp`).
 
 ### 3. Verify Backend Connectivity
