@@ -2,7 +2,7 @@
 ## Ariadne Webapp – Docker Hub Repository Overview
 
 **Repo Name**: `ariadneindustries/ariadne-webapp`  
-**Current Tag**: `0.3.0-web-bff` 
+**Current Tag**: `1.0.0-web-bff` 
 
 **The Ariadne Webapp is a frontend UI for the Ariadne Engine, enabling users to interact with AI workflows, data exploration, and plugin management via a web interface.**
 
@@ -49,7 +49,7 @@ Deploy using `docker-compose.yml`:
 ```yaml
 services:
   ariadne-webapp:
-    image: ariadneindustries/ariadne-webapp:0.1.0-rc.1-web-bff
+    image: ariadneindustries/ariadne-webapp:1.0.0-web-bff
     restart: unless-stopped
     container_name: ariadnewebapp_010
     ports:
@@ -72,7 +72,7 @@ services:
 
 - **Maintained by**: Ariadne Industries GmbH  
 - **Update Frequency**: Managed internally; no public release schedule  
-- **Versioning**: Tags follow `0.1.0-rc.x-web-bff` → `0.1.0-web-bff`
+- **Versioning**: Tags follow `<version>-web-bff` (current: `1.0.0-web-bff`, previous: `0.3.1-web-bff`)
 
 ---
 
