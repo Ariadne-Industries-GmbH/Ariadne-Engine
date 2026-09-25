@@ -122,6 +122,8 @@ services:
       - AAA_FIREWORKS_API_KEY=${AAA_FIREWORKS_API_KEY:-} # Optional. Used only by custom model_config.json entries with provider=fireworks-ai and api_key_env_var=AAA_FIREWORKS_API_KEY.
       # - AAA_LOCAL_AAA_PORT=44444 # defaults to 44444
       - AAA_IDENTITY_SOURCE=integrated-idp # default is ariadne-anyverse, for local setup it should be integrated-idp.
+      - AAA_INTEGRATED_IDP_ALLOW_REGISTRATION=${AAA_INTEGRATED_IDP_ALLOW_REGISTRATION:-1} # Set to 0 to disable public registration and enforce the account allow-list file below (see docs/integrated-idp-account-management.md).
+      - AAA_INTEGRATED_IDP_ACCOUNTS_FILE=${AAA_INTEGRATED_IDP_ACCOUNTS_FILE:-/app/aaa-bundle/databases/integrated_idp_accounts.json} # Must exist, be valid, and be writable (with its parent directory) when registration is disabled. Ignored otherwise.
       - AAA_WORKER_PROCESSES=2 # Overrides default of 4 workers. Each worker uses around **4GB of RAM**.
     
     networks:

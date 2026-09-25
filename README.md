@@ -1501,9 +1501,36 @@ AAA_DEPLOYED_ON_LINUX_PUBLIC_SERVER=0          # Set to 1 to enable ClamAV & san
 | `AAA_FALKORDB_HOST` / `PORT` / `PASSWORD` | - | External database connection details |
 | `AAA_LOCAL_AAA_PORT` | `44444` | Webapp/API endpoint port |
 | `AAA_IDENTITY_SOURCE` | `ariadne-anyverse` | Auth provider: `integrated-idp` (local) or `ariadne-anyverse` (cloud) |
+| `AAA_INTEGRATED_IDP_ALLOW_REGISTRATION` | `1` | `1`/`true`: open self-registration. `0`/`false`: registration closed and the fixed account allowlist is enforced (see [Identity & User Access](#-identity--user-access-who-can-log-in)). |
+| `AAA_INTEGRATED_IDP_ACCOUNTS_FILE` | `$AAA_STORAGE_BASE_DIR/integrated_idp_accounts.json` | Path of the JSON account list used in restricted mode (required and writable there). Ignored while registration is open. |
 | `SEMAPHORE_LIMIT` / `AAA_WORKER_PROCESSES` | `4` / `2-4` | Concurrency limits and Uvicorn worker counts (~4GB RAM per worker) |
 
 > **Note**: In production environments, variables like `AAA_CLOUD_LLM_ENDPOINT` should be avoided as they force cloud routing overrides that break native startup validation.
+
+---
+
+## 🪪 Identity & User Access: Who Can Log In
+
+The engine ships with its own built-in login — the **integrated identity provider** (integrated IdP) — where users sign in with a local username and password stored on your hardware. On top of it you can switch on a **restricted mode with a fixed account list**: only the accounts you list in one JSON file may use the installation; everyone else is blocked (without losing any data).
+
+In restricted mode you, as the administrator, decide:
+
+- **who can log in** — only accounts in the list, registration is closed,
+- **how to block a user** — remove their entry and restart; their data stays, but login, sessions, and API keys stop working,
+- **how to re-enable a user** — put the entry back (with its engine-generated `identity_key`) and restart;
+- **what happens to passwords and recovery keys** — the file's `initial_password` only provisions new accounts, existing passwords are never overwritten, and recovery keys are engine-managed secrets.
+
+The full administrator guide — first setup, the file format field by field, everyday add/block/re-enable workflows, locking down an existing open installation, file protection, and troubleshooting — is in [`docs/integrated-idp-account-management.md`](docs/integrated-idp-account-management.md).
+
+Minimal configuration for restricted mode (the shipped `docker-compose-example.yml` shows it in context):
+
+```bash
+AAA_IDENTITY_SOURCE=integrated-idp
+AAA_INTEGRATED_IDP_ALLOW_REGISTRATION=0
+AAA_INTEGRATED_IDP_ACCOUNTS_FILE=/app/aaa-bundle/databases/integrated_idp_accounts.json
+```
+
+The account file template is [`integrated_idp_accounts.example.json`](integrated_idp_accounts.example.json). Keep in mind: the file is read on startup and is **not watched** — every change requires a controlled engine restart, and the engine writes generated keys back into the file, so it must be writable by the engine (file *and* its parent directory).
 
 ---
 
