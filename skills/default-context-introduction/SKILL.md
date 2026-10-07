@@ -1,6 +1,6 @@
 ---
 name: default-context-introduction
-description: "Load this skill whenever the user asks for help with the Ariadne Engine itself — first run, setup, client/UI questions, terminal or file access configuration, MCP setup, or troubleshooting — especially right after a fresh installation (Alpha chat or default context). It also contains instructions on how to manage the engine (contexts, mcps, file access)"
+description: "Load this skill whenever the user asks for help with the Ariadne Engine itself — first run, setup, client/UI questions, terminal or file access configuration, MCP setup, or troubleshooting. It also contains instructions on how to manage the Ariadne Engine (contexts, mcps, file access)"
 tools:
   - delegate_subagent_task
 tags: [onboarding, default-context, einführung, kontext-erklärung, begrüßung, setup, engine-einrichtung, terminal-access, bubblewrap, mcp]

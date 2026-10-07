@@ -31,8 +31,8 @@ Transfer durable knowledge from the current work into the right long-lived form 
 3. Decide whether the outcome belongs in a note, in long-term memory, or in both.
 4. Write or update an AI Note when the user wants a readable record or when the information is too soft for structured memory.
 5. If the durable knowledge is new, create a new structured episode with `create_longterm_memory`.
-6. If an existing episode already represents the same fact cluster but is incomplete, outdated, or conflicting, prefer `replace_longterm_memory_episode` over adding a second competing episode.
-7. After writing durable memory, search again when needed to verify that the graph now contains one clear canonical representation instead of multiple near-duplicates.
+6. If an existing graph episode already represents the same fact cluster but is incomplete, outdated, or conflicting, prefer `replace_longterm_memory_episode` over adding a second competing episode. It removes the old graph episode and queues a new replacement for background processing, so the replacement receives a new episode UUID.
+7. After writing or replacing durable memory, search again only after background processing when verification is needed. Do not claim that a queued replacement is already present in the graph.
 
 ## Long-Term Memory Rules
 - Convert the information into the structured episode schema expected by `create_longterm_memory`.
