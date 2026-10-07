@@ -1,8 +1,8 @@
 # Ariadne Engine — Docker Hub Repository Overview
 
 **Repository**: `ariadneindustries/ariadne-engine`  
-**Current Release Tag**: `1.0.0-on-prem`  
-**Related Frontend Image**: `ariadneindustries/ariadne-webapp:1.0.0-web-bff`  
+**Current Release Tag**: `1.1.0-on-prem`  
+**Related Frontend Image**: `ariadneindustries/ariadne-webapp:1.1.0-web-bff`  
 **GitHub Repository**: https://github.com/Ariadne-Industries-GmbH/Ariadne-Engine
 
 Please use the GitHub repository as the primary reference for deployment details, configuration examples, release assets, and setup guidance.
@@ -22,7 +22,7 @@ It is designed as a **meta-system for data intelligence** that can orchestrate:
 - MCP-based tools, skills, and custom Python flow scripts
 - speech recognition (standalone faster-whisper service) and multimodal processing
 
-The current `1.0.0` generation builds on the `0.3.x` line and adds the new embedded **Ladybug** graph core (v0.19) with **automatic one-way Kuzu migration**, a **standalone Whisper speech-recognition service** (`AAA_FASTER_WHISPER_SERVICE_MODE`), **workspace file management** support, **per-user local automation policies**, and **hardened worker health checks** with structured diagnostics. The engine itself now runs as a **modular FastAPI monolith**: a single process serves the API, flows, agent runtime, and long-term memory — with fewer moving parts and simplified configuration.
+The current `1.1.0` generation builds on `1.0.0` (Ladybug embedded graph core, standalone Whisper service, modular FastAPI monolith) and adds **file-based document artifacts** (fast and refined markdown exports replace the embedding/vector retrieval layer — document grounding reads from the file system), **workspaces linked to contexts** (`workspace_paths`), optional **browser automation** on native deployments, a **sglang provider** with exact server-side token counting, **cost-aware queue admission** (`load_envelope`), and **device pass-through for the bubblewrap sandbox** (`linux_sandbox.device_bindings`).
 
 ---
 
@@ -30,7 +30,7 @@ The current `1.0.0` generation builds on the `0.3.x` line and adds the new embed
 
 The Docker image provides the **engine backend**. A full local deployment may also include:
 
-- `ariadneindustries/ariadne-webapp:1.0.0-web-bff` for the web frontend
+- `ariadneindustries/ariadne-webapp:1.1.0-web-bff` for the web frontend
 - one or more local inference services such as `llama.cpp`, `vLLM`, or Ollama-compatible endpoints
 - optionally `falkordb/falkordb:latest` when using FalkorDB instead of the embedded Ladybug core
 
@@ -120,7 +120,7 @@ These settings are specifically relevant when using the engine's sandboxed termi
 ```yaml
 services:
   ariadne-engine:
-    image: ariadneindustries/ariadne-engine:1.0.0-on-prem
+    image: ariadneindustries/ariadne-engine:1.1.0-on-prem
     restart: unless-stopped
     ports:
       - "44444:44444"
@@ -202,10 +202,10 @@ Additional optional runtime settings shown in the repository include dreaming ru
 
 - **Maintained by**: Ariadne Industries GmbH
 - **Repository role**: Public setup, configuration, documentation, and release-assets repository for the Ariadne Engine
-- **Current public Docker example**: `ariadneindustries/ariadne-engine:1.0.0-on-prem`
-- **Related frontend image**: `ariadneindustries/ariadne-webapp:1.0.0-web-bff`
+- **Current public Docker example**: `ariadneindustries/ariadne-engine:1.1.0-on-prem`
+- **Related frontend image**: `ariadneindustries/ariadne-webapp:1.1.0-web-bff`
 
-Versioning shown in this repository currently reflects the `1.0.0` release line (previous: `0.3.1`).
+Versioning shown in this repository currently reflects the `1.1.0` release line (previous: `1.0.0`).
 
 ---
 

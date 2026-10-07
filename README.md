@@ -12,24 +12,26 @@ Built by **Ariadne Industries GmbH**, it is the technical backbone of the **[Ari
 
 ---
 
-## 🚀 Release v1.0.0: Workspaces, Knowledge Graph Creation & the New Embedded Graph Core
+## 🚀 Release v1.1.0: File-Based Document Grounding, Workspaces Linked to Contexts & Browser Automation
 
-### What's New Since v0.3.1?
+### What's New Since v1.0.0?
 
-🔥 **v1.0.0** is the first general-availability release of the Ariadne Engine. It adds workspace file management, guided knowledge graph creation, lightweight direct-to-use chats, the new embedded Ladybug graph core, a standalone speech-recognition service, and a hardened monolith deployment, which increases the performance and the security.
+🔥 **v1.1.0** builds directly on **v1.0.0** and delivers the **file-based document pipeline** (fast and refined document artifacts replace the embedding/vector retrieval layer), **workspaces linked to contexts**, **browser automation** for the agent, a **sglang model provider with server-side token counting**, **cost-aware queue admission** in front of the LLM proxy, device pass-through for the bubblewrap sandbox, and a much stronger workspace explorer in the app. Alongside the features, this release fixes the failure families that surfaced in larger production installations (full-text message search on big storages, engine startup after skipped versions, stale background processes, tool calls with unknown arguments).
 
-✅ **Workspaces & File Explorer**: Browse, upload, and download the files of an AI workspace in the new workspace explorer, with per-user access policies and upload size/extension controls \
-✅ **Knowledge Graph Creation**: Guided creation of long-term-memory knowledge graphs from your workspace files, processed by isolated per-item subagents, with custom Graphiti instructions per dataspace \
-✅ **Alpha Chats**: A new lightweight chat type for quick, exploratory conversations, plus reworked context wizards \
-✅ **Chat Copy, Move & Split**: Reorganize chats, split long threads at any message, and search messages with an improved chat-message search tool \
-✅ **Manual Compaction**: Compact a chat history manually at any time with streamed compaction feedback, backed by a context-size evaluation endpoint and ghost-prompt rescue for duplicated tool calls \
-✅ **Ladybug Embedded Graph Core**: The embedded knowledge-graph database is now Ladybug (v0.19). Existing Kuzu databases are **automatically migrated** on the first start after an upgrade, with backups and WAL-corruption recovery \
-✅ **Standalone Whisper Service**: Speech recognition now runs as a separate background service (`integrated` or `external` mode) with model downloads completed before server start \
-✅ **Per-User Automation Policies**: Each user manages their own filesystem roots and MCP registrations from the app, with optional policy templates for new users \
-✅ **Reworked Terminal Tooling**: `exec_terminal_command` supports long-running background processes with a process supervisor, and `edit_file` uses precise, line-anchored editing \
-✅ **Model Routing & Reasoning Contracts**: Centralized premium-model definitions and a background-task model hierarchy with explicit fallback rules \
-✅ **Worker Health Checks & Diagnostics**: Hung-worker detection with configurable timeouts (`AAA_WORKER_HEALTHCHECK_*`) and structured worker exit reports \
-✅ **Improved Document Processing**: Images are extracted from documents including tables, indexed documents can export markdown resources, and MCP image responses are handled as file downloads
+✅ **Document Artifacts on the Filesystem**: Every upload produces a file-based artifact (`document.md` plus optional `assets/`); grounding runs entirely through the file system (`fs_read_command`, `rg`, `sed`). A `fast` variant (AnyDoc) is active immediately, a `refined` variant (Docling) takes over as a persistent background job after validation — with readable export names instead of UUID paths \
+✅ **Workspaces Linked to Contexts**: `create-context` / `update-context` accept `workspace_paths`; granted files and folders appear in the completion context, and the `desktop-file-access` skill is loaded automatically \
+✅ **Browser Automation**: New low-level tools (`browser_navigate`, `browser_snapshot`, `browser_click`, …, plus `browser_handoff` for logins) run in a visible browser profile per user — requires a native interactive desktop session, stays disabled in containers \
+✅ **Model Providers & Token Counting**: New `sglang` provider with exact server-side token counting, tokenizer-based counting for premium models, `xhigh` reasoning effort, declared reasoning/message protocols per endpoint, experimental Ternary Bonsai 2 presets, and a managed llama.cpp CUDA runtime for Linux \
+✅ **Cost-Aware Queue Admission**: Optional `load_envelope` budget in `__queues__` admits a request only when slots **and** compute budget are free \
+✅ **Device Pass-Through for Bubblewrap**: The new server-side key `linux_sandbox.device_bindings` grants individual host devices (GPU/CUDA, DRM, ALSA, USB, …) to agent commands — see [`docs/linux_sandbox_device_bindings.md`](docs/linux_sandbox_device_bindings.md) \
+✅ **Stability at Scale**: Two-stage full-text message search (no more buffer-pool limit), startup no longer blocked by foreign databases or skipped versions, tool-call arguments validated against the function signature, `edit_file` no longer eats blank lines, compaction is always a real model call \
+✅ **Background Processes & File Tools**: `terminal_process` gained `action="list"` and status fields; `fs_read_command` supports combined `-l`/`-n` flags for `rg` and `grep` \
+✅ **Skills**: Engine-owned skill directories are now automatic read-only roots for every user; new engine skills `browser-automation`, `icm-architect`, `desktop-file-access`, and `explore-longterm-memory` \
+✅ **App: Workspace Explorer**: Full file operations from the UI (rename, move, copy, delete, upload by drop, preview, download), "Chat with files", refinement overlay with progress, and workspace links in create/edit context
+
+> **Work in progress — Docker dev sandbox:** the runtime and permission layer is implemented, but a published sandbox image and an operationally ready Docker sandbox arrive with **v1.2.0**. Native terminal automation with `bubblewrap` is unaffected and remains the supported path. Regular Docker deployment of the engine is unchanged.
+
+> 📜 The complete, detailed changelog — including **upgrade notes for operators**, removed threads/tools, automatic data migrations, and known limitations — is in [`release-note/v1.1.0.md`](release-note/v1.1.0.md).
 
 > **Stay tuned!** Follow our [GitHub](https://github.com/Ariadne-Industries-GmbH) or [LinkedIn](https://linkedin.com/company/ariadne-industries) for updates.
 
@@ -49,7 +51,7 @@ The Ariadne Engine is tailored for:
 
 Most LLM tools require you to manage models, agents, and workflows manually. The Ariadne Engine **handles the complexity for you**:
 
-✅ **Agentic automation**: Internal agents interact with LLMs, VLMs, Speech Recognition and embeddings — **you define the workflows, not the infrastructure**. \
+✅ **Agentic automation**: Internal agents interact with LLMs, VLMs, Speech Recognition, the file system, and (optionally) a real browser — **you define the workflows, not the infrastructure**. \
 ✅ **Knowledge graphs**: Your data becomes a **connected intelligence layer**, enabling long-term reasoning across documents, APIs, and internal systems. *(Powered by FalkorDB or the embedded Ladybug graph core)* \
 ✅ **Full control**: Deploy on-premises for maximum privacy or use our cloud version (hosted in Germany, GDPR-compliant). \
 ✅ **Optimized for Technological Sovereignty**:
@@ -70,10 +72,11 @@ Most LLM tools require you to manage models, agents, and workflows manually. The
 | **Knowledge Graphs & LTM** | Structured fact storage powered by FalkorDB or the embedded Ladybug graph core, with guided knowledge-graph creation from your files. Long-term memory with cache syncing, chunking, and episode management. *(No raw storage -> connected insights.)* |
 | **Autonomous Subagents** | Spawn isolated background agents that work on delegated tasks, return execution traces, and scale your automation without blocking the main thread. |
 | **Dreaming Runtimes** | Schedule silent background thinking periods. The engine autonomously processes memories, refines context, and surfaces insights while you sleep. |
-| **Modular AI Integration** | Supports LLMs, VLMs, and embeddings via flexible model routing (`model_config.json`). Works with vLLM, llama.cpp, Ollama, or cloud providers. Configure once, use flexibly. Optimized for Gemma 4, Qwen3.x and Mistral LLMs. |
+| **Modular AI Integration** | Supports LLMs, VLMs, and embeddings via flexible model routing (`model_config.json`). Works with vLLM, sglang, llama.cpp, Ollama, or cloud providers. Configure once, use flexibly. Optimized for Gemma 4, Qwen3.x and Mistral LLMs. |
 | **Privacy by Design**  | Local-only processing or cloud privacy tiers — your choice. Hosted in Germany for compliance. |
 | **Job Scheduling & Automation** | Time-based triggers, notifications, and autonomous background processes with cron-like scheduling. |
-| **Workspaces & File Management** | Browse, upload, and download files per context in the workspace explorer. Per-user access policies and upload size/extension controls included. |
+| **Workspaces & File Management** | Browse, upload, and download files in the workspace explorer and **link files or folders directly to a context** (`workspace_paths`) so the agent works with them immediately. Uploaded documents are exported as file-based markdown artifacts (fast + refined variants) that the agent reads through the file system. Per-user access policies and upload size/extension controls included. |
+| **Browser Automation** | Optional, visible browser automation for the agent (`browser_navigate`, `browser_snapshot`, `browser_click`, …) in a per-user browser profile, including handoff of logins to the user. Requires a native interactive desktop session. |
 
 ---
 
@@ -102,7 +105,7 @@ Choose how your data is processed:
 
 ## 🛠️ Get Started in 5 Minutes
 
-> **Important**: This public repository is meant for **setup, configuration, release assets and documentation** of the Ariadne Engine. It is **not the open source codebase of the engine itself**. 
+> **Important**: This public repository is meant for **setup, configuration, release assets and documentation** of the Ariadne Engine. It is **not the open source codebase of the engine itself**.  We will release the source code as open source in the future.
 
 ### 📦 End-User Download Bundles (Default Path)
 
@@ -146,7 +149,7 @@ Both can be overridden without a code change by setting the variable in the depl
 The Ariadne Engine offers two deployment methods:
 
 #### 1. Native Binary Deployment (Recommended for most users)
-For users who want the fastest path to a working installation, the recommended starting point in `v1.0.0` is the **native Windows / Linux binary**. You can download the release, start the executable, follow the launcher, and let the engine prepare the runtime for you.
+For users who want the fastest path to a working installation, the recommended starting point in `v1.1.0` is the **native Windows / Linux binary**. You can download the release, start the executable, follow the launcher, and let the engine prepare the runtime for you.
 
 **Requirements:**
 - [ ] **Linux** (Ubuntu 24.04+ recommended) or **Windows 10/11**
@@ -353,6 +356,9 @@ services:
     networks:
       - ariadne-network
 
+  # Since v1.1.0 this server backs the long-term-memory (Graphiti) embeddings only.
+  # Document grounding no longer uses embeddings - uploaded documents are exported as
+  # file-based markdown artifacts that the agent reads through the file system.
   llama-cpp-embedding-server:
     image: ghcr.io/ggml-org/llama-cpp:latest
     restart: unless-stopped
@@ -371,7 +377,7 @@ services:
       - ariadne-network
 
   ariadne-engine:
-    image: ariadneindustries/ariadne-engine:1.0.0-on-prem
+    image: ariadneindustries/ariadne-engine:1.1.0-on-prem
     restart: unless-stopped
     ports:
       - "44444:44444"
@@ -446,7 +452,7 @@ services:
       - ariadne-network
 
   ariadne-webapp:
-    image: ariadneindustries/ariadne-webapp:1.0.0-web-bff
+    image: ariadneindustries/ariadne-webapp:1.1.0-web-bff
     restart: unless-stopped
     ports:
       - "43380:80"
@@ -461,6 +467,20 @@ services:
 ```
 
 See `docker-compose-example.yml` in this repository for a full multi-service setup including local model servers. The example shows the optional FalkorDB graph service in full and marks every part that can be removed for the default embedded Ladybug core.
+
+---
+
+### 🌐 Browser Automation (New in v1.1.0)
+
+The agent can drive a **real, visible browser** — navigate, snapshot the page structure, click, type, scroll, take screenshots — in a **browser profile per user**. For logins the agent hands the browser over to the user via `browser_handoff` (the user gets a notification and a 15-minute window to authenticate themselves; the engine never sees credentials).
+
+| Item | Detail |
+|---|---|
+| Tools | `browser_navigate`, `browser_snapshot`, `browser_click`, `browser_type`, `browser_scroll`, `browser_back`, `browser_press`, `browser_screenshot`, `browser_close`, `browser_handoff` |
+| Engine skill | `browser-automation` (ships with the engine and the bundle) |
+| Feature switch | `AAA_BROWSER_USE_ENABLED` (default `0` — disabled; when disabled the tools do not appear in the agent toolset at all) |
+| Runtime | Pinned `agent-browser@0.33.2`; source configurable via `AAA_BROWSER_RUNTIME_SOURCE` (`npm` / `system` / `download` / `explicit`) |
+| Requirement | A **native interactive desktop session**. Browser Use stays disabled in containerized deployments (`AAA_ENGINE_CONTAINERIZED=1`) — the shipped `docker-compose-example.yml` sets both values. |
 
 ---
 
@@ -503,10 +523,10 @@ This file tells the engine which models to use, how to connect to them, and wher
 | Field | Type | Description |
 |-------|------|-------------|
 | `url` | `string` (required) | OpenAI-compatible base URL of the backend, e.g. `http://localhost:44410/v1`. |
-| `provider` | `string` (required) | Backend provider: `vllm`, `llama.cpp`, `bitnet.cpp`, `ollama`, `fireworks-ai`, `openai`, `mistral-ai`, `eurouter`. |
+| `provider` | `string` (required) | Backend provider: `vllm`, `sglang`, `llama.cpp`, `bitnet.cpp`, `ollama`, `fireworks-ai`, `openai`, `mistral-ai`, `eurouter`. New in v1.1.0: `sglang` counts context tokens exactly via the server's `/v1/tokenize` endpoint (`reasoning_effort` is deliberately not sent — the endpoint rejects `high` and `max`). |
 | `privacy_level` | `string` | `Exclusive`, `Standard`, or `Premium` (default `Exclusive`). |
 | `temperature` | `number` | Sampling temperature for the model. |
-| `reasoning_effort` | `string` | `none`, `low`, `medium`, or `high` (default `none`) — the configured reasoning level for this model; forwarding is governed by the model's wire contract (see below). |
+| `reasoning_effort` | `string` | `none`, `low`, `medium`, `high`, or `xhigh` (default `none`) — the configured reasoning level for this model; forwarding is governed by the model's wire contract (see below). |
 | `max_reasoning_tokens` | `integer` | Upper bound for reasoning output tokens (default 48,576). |
 | `reasoning` | `object` | Explicit reasoning wire contract for this endpoint (see below). |
 | `message_protocol` | `object` | Explicit message wire contract for this endpoint (see below). |
@@ -517,6 +537,7 @@ This file tells the engine which models to use, how to connect to them, and wher
 | `context_window` / `max_completion_tokens` / `context_safety_margin` | `integer` | Context management overrides for the model. |
 | `compaction_threshold` / `pruning_threshold` | `integer` | Short-term memory compaction / pruning thresholds in tokens. |
 | `background_process_default` | `boolean` | Legacy single-flag marker for background processing — only evaluated when no `__model_selection__` section is present. |
+| `provider_extras` | `object` | Provider-facing control fields with **no engine schema** (default `{}`). New in v1.1.0. The engine carries the mapping verbatim to the selected provider proxy and interprets nothing itself — only a proxy that implements a given field evaluates it. See below and `docs/provider-extras-model-config.md`. |
 
 > ⚠️ If exclusive local privacy is enabled, the engine needs at least one valid local model in `model_config.json`.
 > If your system has less than 16GB RAM or no powerful GPU, consider using cloud models or an external LLM provider.
@@ -562,11 +583,49 @@ The `__queues__` key defines **per-provider request routing queues** in `model_c
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `provider` | `string` | Backend provider identifier (`"vllm"` or `"llama.cpp"`). Must match a `provider` value in your model entries. |
+| `provider` | `string` | Backend provider identifier (for example `"vllm"`, `"sglang"`, or `"llama.cpp"`). Must match a `provider` value in your model entries. |
 | `url` | `string` | Full API endpoint URL for the backend server (including `/v1` suffix for OpenAI-compatible APIs). Each unique provider + URL combination gets its own request queue. |
 | `max_parallel` | `integer` | Maximum concurrent requests allowed per queue (`≥ 1`). Excess requests are buffered internally until a slot frees up. |
 
 **Why this matters:** In local setups, memory is typically limited. A llama.cpp server is started with a fixed number of context slots (e.g., `--parallel 2`), so `max_parallel: 2` matches the actual capacity — sending more concurrent requests would cause queue overflow and degraded latency. For vLLM, `max_parallel` acts as a circuit-breaker on the engine side, preventing the server from being flooded with requests beyond what it can realistically process (even though vLLM maintains its own internal buffer). Setting `max_parallel` correctly ensures each provider receives only the throughput it can handle stably.
+
+##### Cost-Aware Admission: `load_envelope` (new in v1.1.0)
+
+A slot-based queue treats a prefill and a decode step as equally expensive — on hardware like a single NVIDIA Spark/GB10 they are not. The optional `load_envelope` block adds a **compute budget** in front of the slot check. 
+
+THIS IS OPTIONAL AND JUST AN MINOR POSSIBLE IMPROVEMENT FOR LOCAL DEPLOYMENTS.
+
+Each request starts as PREFILLING and becomes DESCODING at its first generated token; a request is admitted only when **both** criteria are free:
+
+```text
+D + P + 1 <= max_parallel
+D * decode_compute_cost + (P + 1) * prefill_compute_cost <= max_compute_cost_capacity
+```
+
+```json
+{
+  "__queues__": [
+    {
+      "provider": "vllm",
+      "url": "http://192.168.178.93:44410/v1",
+      "max_parallel": 4,
+      "load_envelope": {
+        "max_compute_cost_capacity": 100,
+        "decode_compute_cost": 10,
+        "prefill_compute_cost": 60
+      }
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `max_compute_cost_capacity` | `integer` | Total compute budget shared by all in-flight requests of this queue. |
+| `decode_compute_cost` | `integer` | Cost each request occupies while it is in the DESCODING phase. |
+| `prefill_compute_cost` | `integer` | Cost each request occupies while it is in the PREFILLING phase (`>= decode_compute_cost` is enforced). |
+
+> ⚠️ **Strict validation, no default, no clamping.** All three fields are required together, and an invalid block aborts engine start. Without a `load_envelope` block the queue behaviour is byte-identical to v1.0.0. Queue diagnostics name the blocking criterion (slots vs. compute budget) and the current occupancy; the wait timeout is configured via `AAA_MW_QUEUE_WAIT_TIMEOUT_SECONDS` (default 3600 s).
 
 > **Note:** The native launcher auto-generates and manages this section during setup. In custom or manual setups, you are responsible for declaring your queues explicitly to match your actual server capacity.
 
@@ -610,7 +669,7 @@ For local models, the fallback chain is declared as a reserved top-level section
 
 #### Reasoning & Message Wire Contracts
 
-The optional `reasoning` and `message_protocol` blocks describe the *actual wire contract* of a concrete endpoint, while the per-model `reasoning_effort` (`none`, `low`, `medium`, `high`) selects the configured reasoning level. The engine does not auto-detect a model vendor's native API — new model/provider combinations should declare the blocks explicitly, so reasoning, role, and tool-call formats stay visible without reading proxy code. Existing `proxy_family` settings remain valid (the launcher still writes them for preconfigured models); the explicit blocks described here replace them for new setups, and `docs/model-configuration-wire-contracts.md` documents how the old family profiles map onto this configuration.
+The optional `reasoning` and `message_protocol` blocks describe the *actual wire contract* of a concrete endpoint, while the per-model `reasoning_effort` (`none`, `low`, `medium`, `high`, `xhigh`) selects the configured reasoning level (`xhigh` is new in v1.1.0 — required for local vLLM chat templates such as Qwen flash-next, which validate `low` / `medium` / `xhigh` server-side). The engine does not auto-detect a model vendor's native API — new model/provider combinations should declare the blocks explicitly, so reasoning, role, and tool-call formats stay visible without reading proxy code. Existing `proxy_family` settings remain valid (the launcher still writes them for preconfigured models); the explicit blocks described here replace them for new setups, and `docs/model-configuration-wire-contracts.md` documents how the old family profiles map onto this configuration. Since v1.1.0 `proxy_family` is optional: set it **only when no reasoning contract or message protocol is declared** — a declared reasoning block excludes `proxy_family`, and both are validated at load time with no silent default.
 
 > ⚠️ A model either declares **both** the `reasoning` and `message_protocol` blocks or **neither** (engine defaults: standard message handling, no reasoning replay). Declaring only one of the two is invalid.
 
@@ -920,6 +979,60 @@ This example shows a realistic mixed local setup (vLLM for high-throughput servi
 
 > **Note**: Models whose endpoints need no special handling declare none of the three blocks and run on the engine defaults. All new setups are configured with the explicit blocks; `docs/model-configuration-wire-contracts.md` documents how the preconfigured `proxy_family` profiles map onto them.
 
+#### Provider-Facing Control Fields: `provider_extras`
+
+Some properties of a model belong to a *concrete provider endpoint* rather than to the
+engine. `provider_extras` is the single place in `model_config.json` for such fields: a
+mapping with **no schema**, no engine-side interpretation, and no provider-specific
+branch in the engine code. The engine only carries the declaration to the provider proxy
+that was selected for the request.
+
+```json
+{
+  "glm-5.3-flash": {
+    "url": "https://router.example/v1",
+    "provider": "eurouter",
+    "privacy_level": "Premium",
+    "api_key_env_var": "AAA_EUROUTER_API_KEY",
+    "reasoning_effort": "low",
+    "provider_extras": {
+      "provider": {
+        "ignore": ["upstream-a", "upstream-b"]
+      }
+    }
+  }
+}
+```
+
+Three rules apply across every provider:
+
+- **The engine never reads the content.** It validates only that the value is a mapping
+  (`'provider_extras' must be a mapping.`) and learns no key names. A proxy without
+  support for a field sees exactly the same request as before the field existed.
+- **A model without `provider_extras` is byte-identical to the previous behaviour**
+  (the default is an empty mapping), so adding the field is always optional and additive.
+- **The routing hands out a deep copy.** Model configurations live in a process-wide
+  loader; a shallow copy would share a nested list across every request, and a proxy that
+  appended to it would silently rewrite the stored configuration for all later requests.
+
+Internally the router passes a filled declaration to the selected proxy as the underscore
+marker `_provider_extras`. Underscore keys are the engine-internal transport form and are
+stripped centrally from the payload before the provider is called — the OpenAI-compatible
+client rejects an unknown keyword, so a field one proxy does not read can never disturb a
+different provider.
+
+EUrouter is the first proxy that evaluates the mapping. Its `provider` block controls
+which upstreams may serve the request, and the engine merges it with its own data-protection
+floor (`data_collection`, `data_residency`, `max_retention_days`, `eu_owned` always win, so
+`provider_extras` cannot relax them). A provider without support for the field is unaffected.
+
+> **Note**: `provider_extras` is deliberately unvalidated, so a typo is valid configuration
+> that changes nothing (e.g. `proivder`). The routing resolution exposes the field verbatim
+> via `ResolvedModelRoute.describe()`, which is where such a case becomes visible.
+
+`docs/provider-extras-model-config.md` documents the full contract, the EUrouter merge rules,
+and how to tell from the engine log which upstream instance actually served an answer.
+
 ### `mcp_servers.json` (Optional)
 
 **Configures plugins and external integrations (e.g., APIs, databases).**
@@ -1115,6 +1228,10 @@ You can verify that websearch is working by loading the `ariadne-webresearch-mcp
 
 The skill system allows you to ship reusable, capability-declared skills alongside your deployment. If the `skills/` directory exists, the engine discovers and loads valid `SKILL.md`-based skills from it. If absent, the engine proceeds without global deployment-scoped skills.
 
+**Engine skill directories are automatic read-only roots (new in v1.1.0):** the directories the engine itself ships — those configured via `AAA_GLOBAL_SKILL_DIRS` plus the default `skills/` directory — are automatically exposed to every user as read-only default roots (label "Engine skills"). Agents can therefore read their own built-in skill files without the administrator granting anything; user-owned skills (per-identity `skills/` and the skills archive) are exposed the same way under their own labels.
+
+> ⚠️ **Separator correction (v1.1.0):** `AAA_GLOBAL_SKILL_DIRS` is delimited by the **platform path separator** (`:` on Linux, `;` on Windows) — like `PATH`. Earlier documentation claiming a comma separator was wrong. And since v1.1.0 the `SkillManager` actually honours this variable: skills listed there were previously invisible to the agent.
+
 **Minimal structure**
 
 ```text
@@ -1249,7 +1366,8 @@ Override the config path with `AAA_LOCAL_AUTOMATION_POLICY_CONFIG`. The engine r
     "additional_read_roots": ["/home/user/.cache/pip"],
     "additional_writable_roots": [],
     "hidden_roots": ["/home/user/projects/my-app/.env-secrets"],
-    "protected_relative_paths": [".git", ".venv"]
+    "protected_relative_paths": [".git", ".venv"],
+    "device_bindings": ["/dev/nvidia0", "/dev/nvidiactl"]
   }
 }
 ```
@@ -1267,6 +1385,8 @@ Override the config path with `AAA_LOCAL_AUTOMATION_POLICY_CONFIG`. The engine r
 > **Important:** Shell access is intentionally stricter than file tools. Writing files via shell commands (`echo > file`, `cp`, etc.) is only allowed in `rwx` roots. A `rw` root is writable for the file-editing tools but does not grant bash write permissions — this prevents accidental file modification through terminal commands in non-privileged directories.
 
 Each root can optionally set `"requires_approval": true` to enforce a user confirmation dialog before any tool accesses that directory.
+
+**Device pass-through — `linux_sandbox.device_bindings` (new in v1.1.0):** the bubblewrap sandbox mounts an empty `/dev`, so host devices (GPU, audio, USB) are invisible to agent commands unless you grant them. `device_bindings` lists individual device paths explicitly (emitted as `bwrap --dev-bind-try`). Only absolute paths below `/dev` are accepted — never `/dev` itself, no relative paths, no wildcards. This is a **server-side key**: users cannot add or remove devices through their personal policy, and without the key the generated sandbox arguments are byte-identical to v1.0.0. The Docker runtime ignores the key. Per-hardware templates (NVIDIA/CUDA, AMD/Intel DRM, ALSA, USB, Fuse, V4L2, RDMA) are in [`docs/linux_sandbox_device_bindings.md`](docs/linux_sandbox_device_bindings.md).
 
 #### Per-User Policies & Templates
 
@@ -1362,7 +1482,7 @@ services:
     privileged: true         # Required for bubblewrap — ⚠️ reduces container isolation against host kernel
 ```
 
-The v1.0.0 Docker image runs the engine as a dedicated `ariadne` user (UID/GID default 1000:1000). Set `HOST_UID` and `HOST_GID` in your `.env` to match your host user's ID so that bind-mounted files have correct ownership.
+The v1.1.0 Docker image runs the engine as a dedicated `ariadne` user (UID/GID default 1000:1000). Set `HOST_UID` and `HOST_GID` in your `.env` to match your host user's ID so that bind-mounted files have correct ownership.
 
 ---
 
@@ -1376,7 +1496,7 @@ The Ariadne Engine uses different storage layers depending on which features you
 - **What's stored**:
   - User-specific configurations
   - Temporary or session-based data
-  - Embedded Kuzu databases for lightweight storage
+  - Embedded Ladybug databases (`data.lbug`) for lightweight storage
   - Uploaded files
 - **How it works**:
 The engine manages these folders automatically. No manual setup is required for normal operation.
@@ -1402,7 +1522,7 @@ Choose your graph backend via the `AAA_GRAPHITI_BACKEND` environment variable. *
 
 - The engine itself can run **without** a graph backend.
 - If no graph backend is available, the engine still works, but **knowledge graphs and graph-backed long-term memory are unavailable**.
-- In v1.0.0 you choose between the embedded Ladybug core (default for native and Docker) and the optional external FalkorDB service via environment variables. Upgrading an embedded Kuzu database to Ladybug happens automatically and one-way at startup.
+- In v1.1.0 you choose between the embedded Ladybug core (default for native and Docker) and the optional external FalkorDB service via environment variables. Upgrading an embedded Kuzu database to Ladybug happens automatically and one-way at startup.
 
 **Optional FalkorDB service** (for Docker, only with `AAA_GRAPHITI_BACKEND=falkordb`):
 
@@ -1422,13 +1542,13 @@ falkordb:
 
 ---
 
-## 🔧 Configuration (v1.0.0 Update)
+## 🔧 Configuration (v1.1.0 Update)
 
 The engine uses a highly modular configuration model centered around flexible JSON routing files and environment variables. The hard-coded host setups of the first versions have been fully replaced by this system.
 
 **Essential Environment Variables:**
 - `AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED` (default: `true`): Enables exclusive local model access via `model_config.json`.
-- `AAA_EMBEDDINGS_BASE_URL`: **Required** for embeddings and retrieval features. Set to your embedding server endpoint (e.g., `http://llama-cpp-embedding-server:8080/v1`).
+- `AAA_EMBEDDINGS_BASE_URL`: **Required** — the engine refuses to start without it. Since v1.1.0 the endpoint serves the long-term-memory (Graphiti) embeddings; document grounding no longer uses embeddings but reads file-based artifacts. Set it to your embedding server endpoint (e.g., `http://llama-cpp-embedding-server:8080/v1`).
 - `AAA_GRAPHITI_BACKEND`: Choose between `ladybug` (embedded per-user graph core, **default for native and Docker deployments**) and `falkordb` (optional external graph service for scaling; not covered by the standard release tests since v0.2.0). The legacy value `kuzu` is deprecated — it now selects the embedded backend and triggers the automatic one-way Kuzu → Ladybug migration.
 - `MODEL_CONFIG_PATH`: Recommended path to your local model routing configuration.
 
@@ -1439,7 +1559,7 @@ The engine uses a highly modular configuration model centered around flexible JS
 - **`AAA_CONTEXT_COMPACT_SUMMARY_MAX_CHARS`** (default: `12000`): Maximum character count for AI-generated summaries of old chat fragments during compaction. Balances context preservation and memory optimization.
 - **`AAA_CONTEXT_PRUNE_PROTECTED_TOOLS`** (default: empty tuple): List of tool names whose outputs are never trimmed or compressed. Critical for system or API responses that must appear exactly as returned.
 
-**New in v1.0.0:**
+**New in v1.0.0** (unchanged in v1.1.0):
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -1456,6 +1576,18 @@ The engine uses a highly modular configuration model centered around flexible JS
 | `AAA_ALLOW_USER_MCP_REGISTRY_MUTATIONS` | native binary `1` / Docker `0` | Allow users to create, update, and delete their own MCP server registrations from the app/API. **Enabled by default in the native binary** — set to `0` in your `.env` for professional/multi-user deployments (see [Native Binary Defaults](#native-binary-defaults-administrator-reference)). |
 | `AAA_LOCAL_AUTOMATION_USER_POLICY_TEMPLATE_CONFIG` | (auto) | Path to the user policy template used to pre-seed new users' policies. |
 
+**New in v1.1.0:**
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AAA_BROWSER_USE_ENABLED` | `0` | Enable browser automation for the agent (`browser_*` tools plus `browser_handoff`). Requires a **native interactive desktop session** — keep it `0` in containerized deployments. |
+| `AAA_BROWSER_RUNTIME_SOURCE` | `npm` | Where the pinned `agent-browser` runtime comes from: `npm` (installs exactly `agent-browser@0.33.2`), `system`, `download`, or `explicit`. |
+| `AAA_ENGINE_CONTAINERIZED` | (unset) | Set to `1` in Docker deployments. Marks the engine as running inside a container; disables features that need a native desktop (browser automation, Docker dev sandbox). |
+| `AAA_MW_QUEUE_WAIT_TIMEOUT_SECONDS` | `3600` | How long a request waits in a `__queues__` queue (slots and, if configured, `load_envelope` compute budget) before timing out. The timeout message names this lever. |
+| `AAA_GLOBAL_SKILL_DIRS` | (auto) | Extra skill directories shipped with the deployment. Separator is the **platform path separator** (`:` on Linux) — not a comma. Discovered by the `SkillManager` and automatically exposed as read-only "Engine skills" roots. |
+
+Related internal settings (usually left at defaults): `DOCUMENT_FINALIZATION_WAIT_TIMEOUT_SEC` (`1800` — bounded wait for the refined document variant during LTM ingestion) and `MESSAGE_SEARCH_HYDRATION_BATCH_SIZE` (`2000` — batch size of the two-stage full-text message search). The new server-side policy key `linux_sandbox.device_bindings` is configured in `local_automation_policy.json`, not via environment (see [Local Automation Policy](#local_automation_policyjson)).
+
 ---
 
 ## Environment Variables & `.env` Setup
@@ -1468,7 +1600,7 @@ Create a `.env` file alongside your `docker-compose.yml`:
 HOST_UID=1000
 HOST_GID=1000
 AAA_FALKORDB_PASSWORD=default            # Only required if using FalkorDB backend
-AAA_EMBEDDINGS_BASE_URL=http://llama-cpp-embedding-server:8080/v1  # **REQUIRED** for retrieval features
+AAA_EMBEDDINGS_BASE_URL=http://llama-cpp-embedding-server:8080/v1  # **REQUIRED** - long-term-memory (Graphiti) embeddings; engine start fails without it
 ```
 
 #### 💻 Native Deployment (Automatic Setup)
@@ -1478,7 +1610,7 @@ The Ariadne binary launcher (`ariadne_engine`) automatically injects core variab
 **Core Routing & Privacy:**
 ```bash
 AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED=true    # Routes to local models in `model_config.json`
-AAA_EMBEDDINGS_BASE_URL=http://localhost:8080/v1  # Critical: Vector search will fail without this
+AAA_EMBEDDINGS_BASE_URL=http://localhost:8080/v1  # Required: the engine fails to start without an embedding endpoint (used by long-term-memory / Graphiti embeddings)
 AAA_IDENTITY_SOURCE=integrated-idp             # default is "ariadne-anyverse" so you can use your Ariadne Anyverse Account.
 ```
 
@@ -1494,16 +1626,43 @@ AAA_DEPLOYED_ON_LINUX_PUBLIC_SERVER=0          # Set to 1 to enable ClamAV & san
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `MODEL_CONFIG_PATH` | (current dir) | Location of the central LLM routing config file |
-| `AAA_EMBEDDINGS_BASE_URL` | - | **Required**. Base URL for your embeddings/retrieval service |
+| `AAA_EMBEDDINGS_BASE_URL` | - | **Required**. Base URL of your embedding endpoint (long-term-memory / Graphiti embeddings). Document grounding itself no longer uses embeddings — document artifacts are read from the file system |
 | `AAA_GRAPHITI_BACKEND` | `ladybug` | Graph core: `ladybug` (embedded per-user database, default for native and Docker deployments) or `falkordb` (optional external service). Legacy value `kuzu` selects the embedded backend and triggers the one-way Kuzu → Ladybug migration. |
 | `AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED` | `true` | Enables local/offline model usage via `model_config.json` |
 | `AAA_IS_PRIVACY_LEVEL_PREMIUM_ENABLED` | `false` | Routes to paid cloud LLMs (Mistral/OpenAI/Fireworks) |
 | `AAA_FALKORDB_HOST` / `PORT` / `PASSWORD` | - | External database connection details |
 | `AAA_LOCAL_AAA_PORT` | `44444` | Webapp/API endpoint port |
 | `AAA_IDENTITY_SOURCE` | `ariadne-anyverse` | Auth provider: `integrated-idp` (local) or `ariadne-anyverse` (cloud) |
+| `AAA_INTEGRATED_IDP_ALLOW_REGISTRATION` | `1` | `1`/`true`: open self-registration. `0`/`false`: registration closed and the fixed account allowlist is enforced (see [Identity & User Access](#-identity--user-access-who-can-log-in)). |
+| `AAA_INTEGRATED_IDP_ACCOUNTS_FILE` | `$AAA_STORAGE_BASE_DIR/integrated_idp_accounts.json` | Path of the JSON account list used in restricted mode (required and writable there). Ignored while registration is open. |
 | `SEMAPHORE_LIMIT` / `AAA_WORKER_PROCESSES` | `4` / `2-4` | Concurrency limits and Uvicorn worker counts (~4GB RAM per worker) |
 
 > **Note**: In production environments, variables like `AAA_CLOUD_LLM_ENDPOINT` should be avoided as they force cloud routing overrides that break native startup validation.
+
+---
+
+## 🪪 Identity & User Access: Who Can Log In
+
+The engine ships with its own built-in login — the **integrated identity provider** (integrated IdP) — where users sign in with a local username and password stored on your hardware. On top of it you can switch on a **restricted mode with a fixed account list**: only the accounts you list in one JSON file may use the installation; everyone else is blocked (without losing any data).
+
+In restricted mode you, as the administrator, decide:
+
+- **who can log in** — only accounts in the list, registration is closed,
+- **how to block a user** — remove their entry and restart; their data stays, but login, sessions, and API keys stop working,
+- **how to re-enable a user** — put the entry back (with its engine-generated `identity_key`) and restart;
+- **what happens to passwords and recovery keys** — the file's `initial_password` only provisions new accounts, existing passwords are never overwritten, and recovery keys are engine-managed secrets.
+
+The full administrator guide — first setup, the file format field by field, everyday add/block/re-enable workflows, locking down an existing open installation, file protection, and troubleshooting — is in [`docs/integrated-idp-account-management.md`](docs/integrated-idp-account-management.md).
+
+Minimal configuration for restricted mode (the shipped `docker-compose-example.yml` shows it in context):
+
+```bash
+AAA_IDENTITY_SOURCE=integrated-idp
+AAA_INTEGRATED_IDP_ALLOW_REGISTRATION=0
+AAA_INTEGRATED_IDP_ACCOUNTS_FILE=/app/aaa-bundle/databases/integrated_idp_accounts.json
+```
+
+The account file template is [`integrated_idp_accounts.example.json`](integrated_idp_accounts.example.json). Keep in mind: the file is read on startup and is **not watched** — every change requires a controlled engine restart, and the engine writes generated keys back into the file, so it must be writable by the engine (file *and* its parent directory).
 
 ---
 
@@ -1589,7 +1748,7 @@ docker logs <container_name>
 
 - `model_config.json` is missing or invalid while exclusive local privacy is enabled
 - FalkorDB is not reachable while using `AAA_GRAPHITI_BACKEND=falkordb`, or the embedded Ladybug core cannot open the per-user database (check storage mounts and the worker diagnostic reports)
-- `AAA_EMBEDDINGS_BASE_URL` is not set for retrieval and embedding functionality
+- `AAA_EMBEDDINGS_BASE_URL` is not set — the engine refuses to start (the endpoint backs long-term-memory / Graphiti embeddings)
 - Local model server URLs in `model_config.json` do not match the actual ports of your `llama.cpp`, `Ollama`, or external API setup
 - Required ports are already in use
 - Context compaction thresholds (`AAA_CONTEXT_COMPACT_THRESHOLD_TOKENS`) set too low, causing premature history truncation

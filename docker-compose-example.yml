@@ -5,7 +5,7 @@ networks:
 
 services:
   ariadne-engine:
-    image: ariadneindustries/ariadne-engine:1.0.0-on-prem
+    image: ariadneindustries/ariadne-engine:1.1.0-on-prem
     restart: unless-stopped
     ports:
       - "44444:44444"
@@ -102,8 +102,12 @@ services:
       - HOST_GID=${HOST_GID:-1000}
       # Optional. Defaults to 0002 in the image entrypoint.
       - UMASK=0002
+      # Browser Use V1 needs a native interactive desktop session and is therefore
+      # unavailable in the containerized deployment - keep both values as shown.
+      - AAA_ENGINE_CONTAINERIZED=1
+      - AAA_BROWSER_USE_ENABLED=0
       - AAA_IDP_HOST=http://host.docker.internal:8000 # Defaults to "https://idp.ariadneanyverse.de" **but ignored if AAA_IDENTITY_SOURCE=integrated-idp**
-      - AAA_EMBEDDINGS_BASE_URL=http://llama-cpp-embedding-server:44441/v1 # Required for embeddings functionality. **Error if not set.**
+      - AAA_EMBEDDINGS_BASE_URL=http://llama-cpp-embedding-server:44441/v1 # Required. Still used for the long-term-memory (Graphiti) embedding endpoint. **Startup error if not set.** Document grounding itself no longer uses embeddings - it reads file-based artifacts.
       - AAA_IS_PRIVACY_LEVEL_EXCLUSIVE_ENABLED=true # Defaults to true. Enables Exclusive LLMs based on model_config.json (default for local-only configurations).
       - AAA_IS_PRIVACY_LEVEL_PREMIUM_ENABLED=false # Defaults to true. When enabled, use Premium-level privacy LLMs provided by Ariadne Industries.
       - AAA_IS_PRIVACY_LEVEL_STANDARD_ENABLED=false # Defaults to true. When enabled, use Standard-level privacy LLMs provided by Ariadne Industries.
@@ -122,13 +126,15 @@ services:
       - AAA_FIREWORKS_API_KEY=${AAA_FIREWORKS_API_KEY:-} # Optional. Used only by custom model_config.json entries with provider=fireworks-ai and api_key_env_var=AAA_FIREWORKS_API_KEY.
       # - AAA_LOCAL_AAA_PORT=44444 # defaults to 44444
       - AAA_IDENTITY_SOURCE=integrated-idp # default is ariadne-anyverse, for local setup it should be integrated-idp.
+      - AAA_INTEGRATED_IDP_ALLOW_REGISTRATION=${AAA_INTEGRATED_IDP_ALLOW_REGISTRATION:-1} # Set to 0 to disable public registration and enforce the account allow-list file below (see docs/integrated-idp-account-management.md).
+      - AAA_INTEGRATED_IDP_ACCOUNTS_FILE=${AAA_INTEGRATED_IDP_ACCOUNTS_FILE:-/app/aaa-bundle/databases/integrated_idp_accounts.json} # Must exist, be valid, and be writable (with its parent directory) when registration is disabled. Ignored otherwise.
       - AAA_WORKER_PROCESSES=2 # Overrides default of 4 workers. Each worker uses around **4GB of RAM**.
     
     networks:
       - ariadne-network
 
   ariadne-webapp:
-    image: ariadneindustries/ariadne-webapp:1.0.0-web-bff
+    image: ariadneindustries/ariadne-webapp:1.1.0-web-bff
     restart: unless-stopped
     ports:
       - "43380:80"
